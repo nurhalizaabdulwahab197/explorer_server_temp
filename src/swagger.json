@@ -1,0 +1,118 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Node Express Template -> (NET.ts)",
+    "description": "Node.js NET.ts RESTful API",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local server"
+    },
+    {
+      "url": "https://production.example.com",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": ["healthcheck"],
+        "summary": "Application service health check 💗",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "post": {
+        "tags": ["create user"],
+        "description": "Create user",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Provide API-key (ie. API_KEY_TOKEN from .env.locals file)"
+          }
+        ],
+        "requestBody": {
+          "description": "Input data required to create new user",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User has been created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access forbidden. Incorrect x-api-key!"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserInput": {
+        "type": "object",
+        "required": ["name", "email"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "default": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "default": "john.d@example.net"
+          }
+        }
+      },
+      "ResponseWithMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "api_key": {
+        "type": "apiKey",
+        "name": "x-api-key",
+        "in": "header"
+      }
+    }
+  }
+}
