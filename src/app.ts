@@ -1,5 +1,4 @@
 import express, { Application } from 'express';
-
 import api from 'api';
 import lusca from 'lusca';
 import httpContext from 'express-http-context';
@@ -11,6 +10,7 @@ import uniqueReqId from '@core/middlewares/uniqueReqId.middleware';
 import http404 from '@components/404/404.router';
 import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
+import cors from 'cors'; // Import cors middleware
 import blockchainService from './services/blockchainService';
 
 db.connect();
@@ -18,6 +18,7 @@ blockchainService.startPolling();
 
 const app: Application = express();
 
+app.use(cors()); // Enable CORS
 app.use(lusca.xssProtection(true));
 app.use(expressMongoSanitize());
 app.use(httpContext.middleware);
