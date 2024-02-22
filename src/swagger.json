@@ -101,6 +101,45 @@
         }
       }
     },
+    "/api/block/blockList/{pageNumber}": {
+      "get": {
+        "tags": ["read block"],
+        "summary": "Read block list by page",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"  
+            },
+            "description": "Page number for block list"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseWithMessage"  
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block list not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/block/latestBlockList": {
       "get": {
         "tags": ["read blocks"],
