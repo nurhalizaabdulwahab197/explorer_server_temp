@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { read, readByHash, getLatestList } from '@components/block/block.service';
+import { read, readByHash, getLatestList, readBlockByPage} from '@components/block/block.service';
 import { IBlock } from './block.interface';
 // import { IBlock } from '@components/block/block.interface';
 
@@ -10,6 +10,14 @@ import { IBlock } from './block.interface';
 //   res.status(httpStatus.CREATED);
 //   return res.send({ message: 'Created' });
 // };
+
+const readBlockPage = async (req: Request, res: Response) => {
+  const pageNumber: number = parseInt(req.params.number, 10);
+  const output = await readBlockByPage(pageNumber);
+  res.status(httpStatus.OK);
+  res.send({ message: 'Read latest block list', output });
+};
+
 
 const readBlock = async (req: Request, res: Response) => {
   const blockNumber: number = parseInt(req.params.number, 10);
@@ -66,4 +74,4 @@ const getLatestBlockList = async (req: Request, res: Response) => {
 //   res.send({ message: 'Removed' });
 // };
 
-export { readBlock, readBlockByHash, getLatestBlockList };
+export { readBlock, readBlockByHash, getLatestBlockList,readBlockPage };
