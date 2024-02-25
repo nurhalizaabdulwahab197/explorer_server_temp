@@ -1,4 +1,6 @@
 // blockchainService.ts
+import axios from 'axios'; // yam
+import os from 'os'; // yam
 import Web3 from 'web3';
 import config from '@config/config';
 import logger from '@core/utils/logger';
@@ -105,6 +107,7 @@ class BlockchainService {
     }
   }
 
+  // yam
   async fetchNodeDetails() {
     try {
       // Fetch individual properties
@@ -117,20 +120,35 @@ class BlockchainService {
 
       // Extract client from nodeName (assuming it appears before the '/')
       const clientMatch = nodeName.match(/^([^/]+)/);
-      const client = clientMatch ? clientMatch[1] : 'Unknown';
+      const CLIENT = clientMatch ? clientMatch[1] : 'Unknown';
+
+      // Make an RPC call to get the enode information
+      const enodeResponse = await axios.post(config.privateNetwork, {
+        jsonrpc: '2.0',
+        method: 'admin_nodeInfo',
+        params: [],
+        id: 1,
+      });
+
+      const ENODE = enodeResponse.data.result?.enode || 'Unknown';
+
+      const localHost = Object.values(os.networkInterfaces())
+        .flat()
+        .filter((info) => info.family === 'IPv4' && !info.internal)
+        .map((info) => info.address)
+        .find(Boolean);
 
       const nodeDetails: INode = {
-        status: syncingStatus ? 'Syncing' : 'Synced',
+        status: syncingStatus ? 'Syncing' : 'Running',
         peers: Number(peerCount),
         blocks: Number(syncingStatus ? 0 : await this.web3.eth.getBlockNumber()),
         queued: Number(syncingStatus ? 0 : await this.web3.eth.getBlockTransactionCount('pending')),
-        // eslint-disable-next-line object-shorthand
-        client: client,
+        client: CLIENT,
         node_id: nodeId.toString(),
         node_name: nodeName,
-        enode: 'enode',
+        enode: ENODE,
         rpc_url: config.privateNetwork,
-        local_host: config.mongoUrl, // Change to the appropriate field from your config
+        local_host: localHost || 'Unknown',
       };
 
       console.log('Node Details:', nodeDetails); // Log the nodeDetails to inspect its structure
