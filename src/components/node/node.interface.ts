@@ -1,8 +1,8 @@
 export interface INode {
   status: string;
-  peers: number;
+  peers: Number;
   blocks: number;
-  queued: number;
+  queued: Number;
   client: string;
   node_id: string;
   node_name: string;
