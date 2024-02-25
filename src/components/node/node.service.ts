@@ -23,16 +23,14 @@ const read = async (node_id: string): Promise<INode> => {
   return node as INode;
 };
 
-const fetchAndCreateNode = async (): Promise<boolean> => {
+const fetchNodeDetails = async (nodeId: string): Promise<INode | null> => {
   try {
-    const nodeDetails = await BlockchainService.fetchNodeDetails();
-    const newNodeCreated = await create(nodeDetails);
-    return newNodeCreated;
+    const nodeDetails = await NodeModel.findOne({ node_id: nodeId });
+    return nodeDetails;
   } catch (error) {
-    // Handle the error appropriately
-    console.error('Error fetching and creating node:', error);
-    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to fetch and create node!');
+    logger.error(`Fetch node details err: %O`, error.message);
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to fetch node details!');
   }
 };
 
-export { create, read, fetchAndCreateNode };
+export { create, read, fetchNodeDetails };
