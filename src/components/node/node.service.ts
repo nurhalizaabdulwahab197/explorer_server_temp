@@ -1,8 +1,8 @@
 // node.service.ts
-import axios from 'axios'; // Add Axios for making HTTP requests
 import httpStatus from 'http-status';
 import AppError from '@core/utils/appError';
 import logger from '@core/utils/logger';
+import BlockchainService from '@services/blockchainService'; // Import BlockchainService
 import { NodeModel } from '@components/node/node.model';
 import { INode } from '@components/node/node.interface';
 
@@ -23,15 +23,16 @@ const read = async (node_id: string): Promise<INode> => {
   return node as INode;
 };
 
-const fetchNodeDetails = async (url: string): Promise<INode> => {
+const fetchAndCreateNode = async (): Promise<boolean> => {
   try {
-    const response = await axios.get(url); // Make a GET request to the provided URL
-    const nodeDetails = response.data; // Assuming the response contains the node details
-    return nodeDetails as INode;
-  } catch (err) {
-    logger.error(`Fetch node details err: %O`, err.message);
-    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to fetch node details!');
+    const nodeDetails = await BlockchainService.fetchNodeDetails();
+    const newNodeCreated = await create(nodeDetails);
+    return newNodeCreated;
+  } catch (error) {
+    // Handle the error appropriately
+    console.error('Error fetching and creating node:', error);
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to fetch and create node!');
   }
 };
 
-export { create, read, fetchNodeDetails };
+export { create, read, fetchAndCreateNode };

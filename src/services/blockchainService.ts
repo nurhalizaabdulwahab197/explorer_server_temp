@@ -152,9 +152,10 @@ class BlockchainService {
       };
 
       console.log('Node Details:', nodeDetails); // Log the nodeDetails to inspect its structure
+      return nodeDetails;
     } catch (error) {
       console.error('Error fetching node details:', error);
-      // Implement retry logic or error handling as needed
+      throw error; // Rethrow the error for handling in higher layers
     }
   }
 }
