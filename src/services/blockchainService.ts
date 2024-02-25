@@ -80,7 +80,7 @@ class BlockchainService {
         // ... add all the other properties as needed
       };
 
-      //await saveBlock(block);
+      // await saveBlock(block);
       await setLastSyncedBlock(blockNumber);
 
       // Process the next block
