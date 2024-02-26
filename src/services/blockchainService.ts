@@ -8,7 +8,7 @@ import {
   getLastSyncedBlock,
 } from '@components/block/block.service';
 import { IBlock } from '@components/block/block.interface';
-
+import { ITransaction } from '@components/transaction/transaction.interface';
 class BlockchainService {
   web3: Web3;
 
@@ -23,9 +23,45 @@ class BlockchainService {
     setInterval(() => this.syncBlocks(), this.pollingInterval);
   }
 
+  async fetchBlockTransactions(blockNumber: number): Promise<ITransaction[]> {
+    const block = await this.web3.eth.getBlock(blockNumber);
+    const transactionPromises = block.transactions.map(txHash =>
+      this.web3.eth.getTransaction(txHash)
+    );
+
+    return Promise.all(transactionPromises);
+  }
+
+  calculateTransactionFee(transactions: ITransaction[], gasUsed: number): string {
+    const transactionFeeWei = transactions.reduce(
+      (total, tx) => total.add(this.web3.utils.toBN(tx.gasUsed).mul(this.web3.utils.toBN(tx.gasPrice))),
+      this.web3.utils.toBN(0)
+    );
+
+    const transactionFeeEth = this.web3.utils.fromWei(transactionFeeWei, 'ether');
+    return transactionFeeEth.toString();
+  }
+
+  calculateBlockReward(blockData:  IBlock, transactions: ITransaction[]): string {
+    const uncleRewards = transactions.reduce(
+      (total, tx) => total.add(this.web3.utils.toBN(tx.reward)),
+      this.web3.utils.toBN(0)
+    );
+
+    const blockRewardWei = this.web3.utils.toBN(blockData.reward).sub(uncleRewards);
+    const blockRewardEth = this.web3.utils.fromWei(blockRewardWei, 'ether');
+    return blockRewardEth.toString();
+  }
+
   async fetchLatestBlock() {
     try {
       const blockData = await this.web3.eth.getBlock('latest');
+      const transactions = await this.fetchBlockTransactions(blockData.number);
+      const transactionFee = this.calculateTransactionFee(transactions, blockData.gasUsed);
+      const blockReward = this.calculateBlockReward(blockData, transactions);
+
+     
+    
 
       const block: IBlock = {
         number: Number(blockData.number), // Convert bigint to string
@@ -42,6 +78,9 @@ class BlockchainService {
         gasLimit: Number(blockData.gasLimit), // Convert bigint to string
         gasUsed: Number(blockData.gasUsed), // Convert bigint to string
         timestamp: new Date(Number(blockData.timestamp) * 1000),
+        transactionNumber: Number(
+          await this.web3.eth.getBlockTransactionCount(blockData.number)
+        ),
         // ... add all the other properties as needed
       };
 
@@ -77,6 +116,9 @@ class BlockchainService {
         gasLimit: Number(blockData.gasLimit), // Convert bigint to string
         gasUsed: Number(blockData.gasUsed), // Convert bigint to string
         timestamp: new Date(Number(blockData.timestamp) * 1000),
+        transactionNumber: Number(
+          await this.web3.eth.getBlockTransactionCount(blockData.number)
+        ),
         // ... add all the other properties as needed
       };
 
