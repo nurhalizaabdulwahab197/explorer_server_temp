@@ -1,3 +1,4 @@
+// node.interface.ts
 export interface INode {
   status: string;
   peers: Number;

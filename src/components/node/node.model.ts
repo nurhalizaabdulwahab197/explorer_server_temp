@@ -1,5 +1,4 @@
 // node.model.ts
-
 import mongoose from 'mongoose';
 import { INode } from './node.interface';
 
