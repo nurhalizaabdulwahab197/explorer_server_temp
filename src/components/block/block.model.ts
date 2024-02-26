@@ -21,7 +21,8 @@ const blockSchema = new mongoose.Schema<IBlock>(
     gasUsed: { type: Number, required: true },
     timestamp: { type: Date, required: true },
     transactionNumber: { type: Number, required: true },
-    transactionFee: { type: Number, required: true }
+    transactionFee: { type: Number, required: true },
+    blockReward: { type: Number, required: true }
     // ... any other properties you want to include
   },
   { timestamps: true }

@@ -8,10 +8,9 @@ import {
   getLastSyncedBlock,
 } from '@components/block/block.service';
 import { IBlock } from '@components/block/block.interface';
-import { ITransaction } from '@components/transaction/transaction.interface';
+
 class BlockchainService {
   web3: Web3;
-
   pollingInterval: number;
 
   constructor() {
@@ -23,69 +22,73 @@ class BlockchainService {
     setInterval(() => this.syncBlocks(), this.pollingInterval);
   }
 
-  async fetchBlockTransactions(blockNumber: number): Promise<ITransaction[]> {
-    const block = await this.web3.eth.getBlock(blockNumber);
-    const transactionPromises = block.transactions.map(txHash =>
-      this.web3.eth.getTransaction(txHash)
-    );
+  async calculateTransactionFees(blockNumber: number): Promise<number> {
+    try {
+      const block = await this.web3.eth.getBlock(blockNumber);
 
-    return Promise.all(transactionPromises);
-  }
+      if (!block) {
+        console.error(`Block not found for block number ${blockNumber}`);
+        return 0;
+      }
 
-  calculateTransactionFee(transactions: ITransaction[], gasUsed: number): string {
-    const transactionFeeWei = transactions.reduce(
-      (total, tx) => total.add(this.web3.utils.toBN(tx.gasUsed).mul(this.web3.utils.toBN(tx.gasPrice))),
-      this.web3.utils.toBN(0)
-    );
+      let totalTransactionFee = 0;
 
-    const transactionFeeEth = this.web3.utils.fromWei(transactionFeeWei, 'ether');
-    return transactionFeeEth.toString();
-  }
+      for (const txHash of block.transactions  as string[]) {
+        const tx = await this.web3.eth.getTransaction(txHash);
 
-  calculateBlockReward(blockData:  IBlock, transactions: ITransaction[]): string {
-    const uncleRewards = transactions.reduce(
-      (total, tx) => total.add(this.web3.utils.toBN(tx.reward)),
-      this.web3.utils.toBN(0)
-    );
+        if (!tx) {
+          console.error(`Transaction not found for hash ${txHash}`);
+          continue;
+        }
 
-    const blockRewardWei = this.web3.utils.toBN(blockData.reward).sub(uncleRewards);
-    const blockRewardEth = this.web3.utils.fromWei(blockRewardWei, 'ether');
-    return blockRewardEth.toString();
+        const gasPrice = Number(tx.gasPrice);
+        const gas = Number(tx.gas);
+
+        const transactionFee = Number(
+          this.web3.utils.fromWei((gasPrice * gas).toString(), 'ether')
+        );
+
+        // Accumulate transaction fees
+        totalTransactionFee += transactionFee;
+      }
+
+      return totalTransactionFee;
+    } catch (error) {
+      console.error('Error calculating transaction fees:', error);
+      return 0;
+    }
   }
 
   async fetchLatestBlock() {
     try {
       const blockData = await this.web3.eth.getBlock('latest');
-      const transactions = await this.fetchBlockTransactions(blockData.number);
-      const transactionFee = this.calculateTransactionFee(transactions, blockData.gasUsed);
-      const blockReward = this.calculateBlockReward(blockData, transactions);
-
-     
-    
 
       const block: IBlock = {
-        number: Number(blockData.number), // Convert bigint to string
+        number: Number(blockData.number),
         hash: blockData.hash,
         parentHash: blockData.parentHash,
-        nonce: Number(blockData.nonce), // Convert bigint to string if it's not undefined
+        nonce: Number(blockData.nonce),
         sha3Uncles: blockData.sha3Uncles,
         transactions: blockData.transactions?.map((tx) => (typeof tx === 'string' ? tx : tx.hash)),
         miner: blockData.miner,
-        difficulty: Number(blockData.difficulty), // Convert bigint to string
-        totalDifficulty: Number(blockData.totalDifficulty), // Convert bigint to string
-        size: Number(blockData.size), // Convert bigint to string
+        difficulty: Number(blockData.difficulty),
+        totalDifficulty: Number(blockData.totalDifficulty),
+        size: Number(blockData.size),
         extraData: blockData.extraData,
-        gasLimit: Number(blockData.gasLimit), // Convert bigint to string
-        gasUsed: Number(blockData.gasUsed), // Convert bigint to string
+        gasLimit: Number(blockData.gasLimit),
+        gasUsed: Number(blockData.gasUsed),
         timestamp: new Date(Number(blockData.timestamp) * 1000),
-        transactionNumber: Number(
-          await this.web3.eth.getBlockTransactionCount(blockData.number)
-        ),
-        // ... add all the other properties as needed
+        transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
+        transactionFee:  Number(await this.calculateTransactionFees(Number(blockData.number))), 
+        blockReward: Number(await this.calculateTransactionFees(Number(blockData.number)))+0,
+        // ... (other properties)
       };
 
+
+      block.transactionFee = await this.calculateTransactionFees(Number(blockData.number));
+
       // Save the block using the block service
-      // await createBlock(block);
+      await saveBlock(block);
       logger.info(`Block number ${block.number} saved to the database.`);
     } catch (error) {
       logger.error('Error fetching the latest block:', error);
@@ -102,24 +105,24 @@ class BlockchainService {
     try {
       const blockData = await this.web3.eth.getBlock(blockNumber);
       const block: IBlock = {
-        number: Number(blockData.number), // Convert bigint to string
+        number: Number(blockData.number),
         hash: blockData.hash,
         parentHash: blockData.parentHash,
-        nonce: Number(blockData.nonce), // Convert bigint to string if it's not undefined
+        nonce: Number(blockData.nonce),
         sha3Uncles: blockData.sha3Uncles,
         transactions: blockData.transactions?.map((tx) => (typeof tx === 'string' ? tx : tx.hash)),
         miner: blockData.miner,
-        difficulty: Number(blockData.difficulty), // Convert bigint to string
-        totalDifficulty: Number(blockData.totalDifficulty), // Convert bigint to string
-        size: Number(blockData.size), // Convert bigint to string
+        difficulty: Number(blockData.difficulty),
+        totalDifficulty: Number(blockData.totalDifficulty),
+        size: Number(blockData.size),
         extraData: blockData.extraData,
-        gasLimit: Number(blockData.gasLimit), // Convert bigint to string
-        gasUsed: Number(blockData.gasUsed), // Convert bigint to string
+        gasLimit: Number(blockData.gasLimit),
+        gasUsed: Number(blockData.gasUsed),
         timestamp: new Date(Number(blockData.timestamp) * 1000),
-        transactionNumber: Number(
-          await this.web3.eth.getBlockTransactionCount(blockData.number)
-        ),
-        // ... add all the other properties as needed
+        transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
+        transactionFee:  Number(await this.calculateTransactionFees(Number(blockData.number))), 
+        blockReward: Number(await this.calculateTransactionFees(Number(blockData.number)))+0,
+        // ... (other properties)
       };
 
       //await saveBlock(block);

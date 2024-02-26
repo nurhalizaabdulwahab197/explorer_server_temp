@@ -248,6 +248,70 @@
           }
         ]
       }
+    },
+    "/api/transaction": {
+      "post": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve all transactions",
+        "responses": {
+          "200": {
+            "description": "Transactions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TransactionInput"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/{hashId}": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve a transaction by hash",
+        "parameters": [
+          {
+            "name": "hashId",
+            "in": "path",
+            "description": "The hashId of the transaction to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionInput"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -265,6 +329,49 @@
             "default": "john.d@example.net"
           }
         }
+      },
+      "TransactionInput": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string"
+          },
+          "block": {
+            "type": "integer"
+          },
+          "senderAddress": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "receiverAddress": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "gasPrice": {
+            "type": "number"
+          },
+          "transactionFee": {
+            "type": "number"
+          },
+          "gasLimit": {
+            "type": "number"
+          },
+          "gasUsed": {
+            "type": "number"
+          },
+          "gasFees": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["hash", "block", "senderAddress", "amount", "receiverAddress", "value", "gasPrice", "transactionFee", "gasLimit", "gasUsed", "gasFees", "timestamp"]
       },
       "ResponseWithMessage": {
         "type": "object",

@@ -26,7 +26,7 @@ const update = async (user: IUser): Promise<boolean> => {
     const updatedUser = await UserModel.findOneAndUpdate(
       { email: user.email },
       { name: user.name },
-      { new: true },
+      { new: true }
     );
     logger.debug(`User updated: %O`, updatedUser);
     return true;

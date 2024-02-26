@@ -16,6 +16,7 @@ export interface IBlock {
   gasUsed: number;
   timestamp: Date;
   transactionNumber: number;
-
+  transactionFee: number;
+  blockReward: number;
   // ... any other properties you want to include
 }
