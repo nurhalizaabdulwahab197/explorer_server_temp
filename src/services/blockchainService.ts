@@ -11,11 +11,12 @@ import { IBlock } from '@components/block/block.interface';
 
 class BlockchainService {
   web3: Web3;
+
   pollingInterval: number;
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 10000; // Poll every 10 seconds
+    this.pollingInterval = 30000;
   }
 
   startPolling() {
@@ -87,24 +88,25 @@ class BlockchainService {
       }
 
       let totalTransactionFee = 0;
+      if (block.transactions && block.transactions.length > 0) {
+        block.transactions.forEach(async (txHash) => {
+          const tx = await this.web3.eth.getTransaction(txHash);
 
-      for (const txHash of block.transactions as string[]) {
-        const tx = await this.web3.eth.getTransaction(txHash);
+          if (!tx) {
+            console.error(`Transaction not found for hash ${txHash}`);
+            return;
+          }
 
-        if (!tx) {
-          console.error(`Transaction not found for hash ${txHash}`);
-          continue;
-        }
+          const gasPrice = Number(tx.gasPrice);
+          const gas = Number(tx.gas);
 
-        const gasPrice = Number(tx.gasPrice);
-        const gas = Number(tx.gas);
+          const transactionFee = Number(
+            this.web3.utils.fromWei((gasPrice * gas).toString(), 'ether')
+          );
 
-        const transactionFee = Number(
-          this.web3.utils.fromWei((gasPrice * gas).toString(), 'ether')
-        );
-
-        // Accumulate transaction fees
-        totalTransactionFee += transactionFee;
+          // Accumulate transaction fees
+          totalTransactionFee += transactionFee;
+        });
       }
 
       return totalTransactionFee;
@@ -185,7 +187,7 @@ class BlockchainService {
         // ... (other properties)
       };
 
-      await saveBlock(block);
+      // await saveBlock(block);
       await setLastSyncedBlock(blockNumber);
 
       // Process the next block

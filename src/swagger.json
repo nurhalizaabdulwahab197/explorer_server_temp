@@ -31,6 +31,41 @@
         }
       }
     },
+    "/api/account/accountOverview/{address}": {
+      "get": {
+        "tags": ["account"],
+        "summary": "Read account",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Account address"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/block/number/{number}": {
       "get": {
         "tags": ["read block"],
@@ -142,7 +177,7 @@
     },
     "/api/block/latestBlockList": {
       "get": {
-        "tags": ["read blocks"],
+        "tags": ["read block"],
         "summary": "Read blocks",
         "responses": {
           "200": {
