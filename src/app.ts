@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 
 import api from 'api';
 import lusca from 'lusca';
+import cors from 'cors';
 import httpContext from 'express-http-context';
 import expressMongoSanitize from 'express-mongo-sanitize';
 import consts from '@config/consts';
@@ -26,6 +27,8 @@ app.use(httpContext.middleware);
 app.use(httpLogger.successHandler);
 app.use(httpLogger.errorHandler);
 app.use(uniqueReqId);
+// Allow requests from all origins
+app.use(cors());
 app.use(express.json());
 app.use(consts.API_ROOT_PATH, api);
 app.use(swaggerApiDocs);
