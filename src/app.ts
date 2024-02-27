@@ -12,9 +12,11 @@ import http404 from '@components/404/404.router';
 import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
 import blockchainService from './services/blockchainService';
+import nodeService from './services/nodeService';
 
 db.connect();
 blockchainService.startPolling();
+nodeService.startPolling();
 
 const app: Application = express();
 

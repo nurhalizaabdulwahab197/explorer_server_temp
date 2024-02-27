@@ -1,6 +1,4 @@
 // blockchainService.ts
-import axios from 'axios'; // yam
-import os from 'os'; // yam
 import Web3 from 'web3';
 import config from '@config/config';
 import logger from '@core/utils/logger';
@@ -10,7 +8,6 @@ import {
   getLastSyncedBlock,
 } from '@components/block/block.service';
 import { IBlock } from '@components/block/block.interface';
-import { INode } from '@components/node/node.interface';
 
 class BlockchainService {
   web3: Web3;
@@ -24,7 +21,6 @@ class BlockchainService {
 
   startPolling() {
     setInterval(() => this.syncBlocks(), this.pollingInterval);
-    setInterval(() => this.fetchNodeDetails(), this.pollingInterval * 2); // Adjust the interval as needed
   }
 
   async fetchLatestBlock() {
@@ -104,58 +100,6 @@ class BlockchainService {
       await this.syncBlock(lastSyncedBlockNumber + 1, Number(latestBlockNumber));
     } catch (error) {
       logger.error('Error initiating block sync:', error);
-    }
-  }
-
-  // yam
-  async fetchNodeDetails() {
-    try {
-      // Fetch individual properties
-      const [nodeId, nodeName, peerCount, syncingStatus] = await Promise.all([
-        this.web3.eth.net.getId(), // Fetch node ID
-        this.web3.eth.getNodeInfo(), // Fetch node name
-        this.web3.eth.net.getPeerCount(),
-        this.web3.eth.isSyncing(),
-      ]);
-
-      // Extract client from nodeName (assuming it appears before the '/')
-      const clientMatch = nodeName.match(/^([^/]+)/);
-      const CLIENT = clientMatch ? clientMatch[1] : 'Unknown';
-
-      // Make an RPC call to get the enode information
-      const enodeResponse = await axios.post(config.privateNetwork, {
-        jsonrpc: '2.0',
-        method: 'admin_nodeInfo',
-        params: [],
-        id: 1,
-      });
-
-      const ENODE = enodeResponse.data.result?.enode || 'Unknown';
-
-      const localHost = Object.values(os.networkInterfaces())
-        .flat()
-        .filter((info) => info.family === 'IPv4' && !info.internal)
-        .map((info) => info.address)
-        .find(Boolean);
-
-      const nodeDetails: INode = {
-        status: syncingStatus ? 'Syncing' : 'Running',
-        peers: Number(peerCount),
-        blocks: Number(syncingStatus ? 0 : await this.web3.eth.getBlockNumber()),
-        queued: Number(syncingStatus ? 0 : await this.web3.eth.getBlockTransactionCount('pending')),
-        client: CLIENT,
-        node_id: nodeId.toString(),
-        node_name: nodeName,
-        enode: ENODE,
-        rpc_url: config.privateNetwork,
-        local_host: localHost || 'Unknown',
-      };
-
-      console.log('Node Details:', nodeDetails); // Log the nodeDetails to inspect its structure
-      return nodeDetails;
-    } catch (error) {
-      console.error('Error fetching node details:', error);
-      throw error; // Rethrow the error for handling in higher layers
     }
   }
 }

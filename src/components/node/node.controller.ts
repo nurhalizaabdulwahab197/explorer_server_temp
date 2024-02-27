@@ -1,40 +1,25 @@
 // node.controller.ts
 import { Request, Response } from 'express';
-import httpStatus from 'http-status';
-import { create, read, fetchNodeDetails } from '@components/node/node.service';
-import { INode } from '@components/node/node.interface';
+import NodeService from '@services/nodeService'; // Import NodeService
 
-const createNode = async (req: Request, res: Response) => {
-  try {
-    const node = req.body as INode;
-    await create(node);
-    res.status(httpStatus.CREATED).send({ message: 'Created' });
-  } catch (error) {
-    res.status(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR).send({ error: error.message });
-  }
-};
+class NodeController {
+  // eslint-disable-next-line class-methods-use-this
+  async getNodeDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const nodeId = req.params.id;
+      console.log('Node ID:', nodeId); // Log the node ID to check if it's correctly received
+      const nodeDetails = await NodeService.fetchNodeDetails(nodeId);
 
-const readNode = async (req: Request, res: Response) => {
-  try {
-    const nodeDetails = await read(req.params.id);
-    res.status(httpStatus.OK).send({ message: 'Read', output: nodeDetails });
-  } catch (error) {
-    res.status(error.statusCode || httpStatus.INTERNAL_SERVER_ERROR).send({ error: error.message });
-  }
-};
-
-const fetchNodeDetailsController = async (req: Request, res: Response) => {
-  try {
-    const nodeId = req.params.id; // Assuming the node ID is part of the URL
-    const nodeDetails = await fetchNodeDetails(nodeId);
-    if (nodeDetails) {
-      res.status(httpStatus.OK).send({ message: 'Fetched node details', output: nodeDetails });
-    } else {
-      res.status(httpStatus.NOT_FOUND).send({ message: 'Node not found' });
+      if (nodeDetails) {
+        res.status(200).json(nodeDetails);
+      } else {
+        res.status(404).json({ error: 'Node not found' });
+      }
+    } catch (error) {
+      console.error('Error in getNodeDetails:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-  } catch (error) {
-    res.status(error.status || httpStatus.INTERNAL_SERVER_ERROR).send({ message: error.message });
   }
-};
+}
 
-export { createNode, readNode, fetchNodeDetailsController };
+export default new NodeController();

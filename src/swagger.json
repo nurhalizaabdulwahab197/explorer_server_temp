@@ -80,6 +80,64 @@
           }
         ]
       }
+    },
+    "/api/nodes/{id}": {
+      "get": {
+        "tags": ["fetch node details"],
+        "summary": "Fetch node details by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the node to fetch details for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "Running",
+                  "peers": 10,
+                  "blocks": 500,
+                  "queued": 5,
+                  "client": "Geth",
+                  "node_id": "12345",
+                  "node_name": "MyNode/1.0.0",
+                  "enode": "enode://...",
+                  "rpc_url": "http://localhost:8545",
+                  "local_host": "192.168.1.2"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Node not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Node not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

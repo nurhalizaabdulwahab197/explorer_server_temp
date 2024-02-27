@@ -1,12 +1,9 @@
 // node.router.ts
-
 import express from 'express';
-import { createNode, readNode, fetchNodeDetailsController } from '@components/node/node.controller';
+import NodeController from '@components/node/node.controller';
 
 const router = express.Router();
 
-router.post('/create', createNode);
-router.get('/read/:id', readNode);
-router.post('/fetch-and-create', fetchNodeDetailsController); // Use POST for actions that change the state
+router.get('/nodes/:id', NodeController.getNodeDetails); // Use GET for fetching data
 
 export default router;
