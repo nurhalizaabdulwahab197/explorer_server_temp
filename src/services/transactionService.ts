@@ -40,15 +40,28 @@ class TransactionService {
             receiverAddress: tx.to,
             value: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
             gasPrice: Number(this.web3.utils.fromWei(tx.gasPrice.toString(), 'gwei')),
-            gasLimit: Number(tx.gasLimit) || 0, // Ensure gasLimit is a number, defaulting to 0 if undefined
-            gasUsed: Number(tx.gas),
+            gasLimit: Number(tx.gas),
+            gasUsed: Number(latestBlock.gasUsed) / Number(latestBlock.transactions.length),
             gasFees: Number(this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')),
             timestamp: new Date(Number(latestBlock.timestamp) * 1000),
             transactionFee: Number(
               this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')
-            ), // Provide a default value for transactionFee
-            // Add other relevant transaction data here
+            ),
+            maxFeePerGas: Number(
+              this.web3.utils.fromWei(Number(Number(tx.gasPrice) * 1.2).toString(), 'gwei')
+            ),
+            maxPriorityFeePerGas: Number(
+              this.web3.utils.fromWei(Number(Number(tx.gasPrice) * 0.2).toString(), 'gwei')
+            ),
+            baseFeePerGas: Number(
+              this.web3.utils.fromWei(
+                latestBlock.baseFeePerGas?.toString() ||
+                  Number(Number(tx.gasPrice) * 1.2 - Number(tx.gasPrice) * 0.2).toString(),
+                'gwei'
+              )
+            ),
           };
+
           // eslint-disable-next-line no-await-in-loop
           await TransactionModel.create(transactionData);
           logger.info(`Transaction saved: ${tx.hash}`);

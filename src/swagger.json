@@ -82,7 +82,7 @@
       }
     },
     "/api/transaction": {
-      "post": {
+      "get": {
         "tags": ["retrieve transactions"],
         "description": "Retrieve all transactions",
         "responses": {
