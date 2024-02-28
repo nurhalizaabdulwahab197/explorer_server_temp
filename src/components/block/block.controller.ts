@@ -6,6 +6,7 @@ import {
   getLatestList,
   readBlockByPage,
   readBlockListWithSkip,
+  getLastSyncedBlock,
 } from '@components/block/block.service';
 // import { IBlock } from '@components/block/block.interface';
 
@@ -60,11 +61,11 @@ const readBlockWithSkip = async (req: Request, res: Response) => {
   res.send({ message: 'Read latest block list', output });
 };
 
-// const getLastSyncedBlocks = async (res: Response) => {
-//   await getLastSyncedBlock();
-//   res.status(httpStatus.OK);
-//   res.send({ message: 'LastSyncBlock get' });
-// };
+const getLastSyncedBlocks = async (req: Request, res: Response) => {
+  const output = await getLastSyncedBlock();
+  res.status(httpStatus.OK);
+  res.send({ message: 'LastSyncBlock get', output });
+};
 
 // const setLastSyncedBlocks = async (req: Request, res: Response) => {
 //   const { lastSyncedBlock } = req.body;
@@ -85,4 +86,11 @@ const readBlockWithSkip = async (req: Request, res: Response) => {
 //   res.send({ message: 'Removed' });
 // };
 
-export { readBlock, readBlockByHash, getLatestBlockList, readBlockPage, readBlockWithSkip };
+export {
+  readBlock,
+  readBlockByHash,
+  getLatestBlockList,
+  readBlockPage,
+  readBlockWithSkip,
+  getLastSyncedBlocks,
+};
