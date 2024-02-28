@@ -81,13 +81,42 @@
         ]
       }
     },
-    "/api/nodes/{id}": {
+    "/api/nodes": {
+      "get": {
+        "tags": ["fetch all node details"],
+        "description": "Fetch all node details",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "nodeDetails": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/NodeDetail"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/nodes/{node_id}": {
       "get": {
         "tags": ["fetch node details"],
-        "summary": "Fetch node details by ID",
+        "description": "Fetch node details by ID",
         "parameters": [
           {
-            "name": "id",
+            "name": "node_id",
             "in": "path",
             "required": true,
             "schema": {
@@ -101,17 +130,8 @@
             "description": "Successful response",
             "content": {
               "application/json": {
-                "example": {
-                  "status": "Running",
-                  "peers": 10,
-                  "blocks": 500,
-                  "queued": 5,
-                  "client": "Geth",
-                  "node_id": "12345",
-                  "node_name": "MyNode/1.0.0",
-                  "enode": "enode://...",
-                  "rpc_url": "http://localhost:8545",
-                  "local_host": "192.168.1.2"
+                "schema": {
+                  "$ref": "#/components/schemas/NodeDetail"
                 }
               }
             }
@@ -163,6 +183,42 @@
             "type": "string"
           }
         }
+      },
+      "NodeDetail": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "peers": {
+            "type": "number"
+          },
+          "blocks": {
+            "type": "number"
+          },
+          "queued": {
+            "type": "number"
+          },
+          "client": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "node_name": {
+            "type": "string"
+          },
+          "enode": {
+            "type": "string"
+          },
+          "rpc_url": {
+            "type": "string"
+          },
+          "local_host": {
+            "type": "string"
+          }
+        },
+        "required": ["status", "peers", "blocks", "queued", "client", "node_id", "node_name", "enode", "rpc_url"]
       }
     },
     "securitySchemes": {

@@ -1,9 +1,10 @@
 // node.router.ts
 import express from 'express';
-import NodeController from '@components/node/node.controller';
+import { retrieveNode, retrieveNodeByNodeID } from '@components/node/node.controller';
 
 const router = express.Router();
 
-router.get('/nodes/:id', NodeController.getNodeDetails); // Use GET for fetching data
+router.get('/nodes/:node_id', retrieveNodeByNodeID); // Use GET for fetching data
+router.get('/nodes', retrieveNode);
 
 export default router;
