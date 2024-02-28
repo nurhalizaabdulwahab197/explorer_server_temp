@@ -23,6 +23,61 @@ class BlockchainService {
     setInterval(() => this.syncBlocks(), this.pollingInterval);
   }
 
+  async traceBlockInternalTransactions(blockNumber: number): Promise<number> {
+    try {
+      const block = await this.web3.eth.getBlock(blockNumber);
+
+      if (!block.transactions || block.transactions.length === 0) {
+        // Return 0 if there are no transactions
+        return 0;
+      }
+
+      const transactionTracesPromises = [];
+
+      for (const txHash of block.transactions) {
+        const tracePromise = new Promise((resolve, reject) => {
+          this.web3.currentProvider.send(
+            {
+              jsonrpc: '2.0',
+              method: 'debug_traceTransaction',
+              params: [txHash, {}],
+              id: new Date().getTime(),
+            },
+            (error, response) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(response);
+              }
+            }
+          );
+        });
+
+        transactionTracesPromises.push(tracePromise);
+      }
+
+      const transactionTraces = await Promise.all(transactionTracesPromises);
+
+      // Process the traces to extract internal transactions
+      let contractInternalTransactionCount = 0;
+
+      transactionTraces.forEach((trace) => {
+        if (trace.result && trace.result.structLogs) {
+          // Check if any structLog has a "depth" greater than 0, indicating an internal call
+          if (trace.result.structLogs.some((log) => log.depth > 0)) {
+            contractInternalTransactionCount++;
+          }
+        }
+      });
+
+      return contractInternalTransactionCount;
+    } catch (error) {
+      console.error(error);
+      // Return -1 for other errors
+      return -1;
+    }
+  }
+
   async calculateTransactionFees(blockNumber: number): Promise<number> {
     try {
       const block = await this.web3.eth.getBlock(blockNumber);
@@ -83,6 +138,9 @@ class BlockchainService {
         transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
         transactionFee: Number(await this.calculateTransactionFees(Number(blockData.number))),
         blockReward: Number(await this.calculateTransactionFees(Number(blockData.number))) + 0,
+        internalTransaction: Number(
+          await this.traceBlockInternalTransactions(Number(blockData.number))
+        ),
         // ... (other properties)
       };
 
@@ -123,6 +181,9 @@ class BlockchainService {
         transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
         transactionFee: Number(await this.calculateTransactionFees(Number(blockData.number))),
         blockReward: Number(await this.calculateTransactionFees(Number(blockData.number))) + 0,
+        internalTransaction: Number(
+          await this.traceBlockInternalTransactions(Number(blockData.number))
+        ),
         // ... (other properties)
       };
 

@@ -18,5 +18,6 @@ export interface IBlock {
   transactionNumber: number;
   transactionFee: number;
   blockReward: number;
+  internalTransaction: number;
   // ... any other properties you want to include
 }

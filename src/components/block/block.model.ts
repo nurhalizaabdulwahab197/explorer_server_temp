@@ -23,6 +23,7 @@ const blockSchema = new mongoose.Schema<IBlock>(
     transactionNumber: { type: Number, required: true },
     transactionFee: { type: Number, required: true },
     blockReward: { type: Number, required: true },
+    internalTransaction: { type: Number, required: true },,
     // ... any other properties you want to include
   },
   { timestamps: true }
