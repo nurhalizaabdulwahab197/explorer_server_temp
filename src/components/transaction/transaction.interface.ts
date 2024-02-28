@@ -13,5 +13,8 @@ export interface ITransaction {
   gasUsed: number;
   gasFees: number;
   timestamp: Date;
+  maxFeePerGas: number;
+  maxPriorityFeePerGas: number;
+  baseFeePerGas: number;
   // ... any other properties you want to include
 }
