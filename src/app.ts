@@ -10,6 +10,7 @@ import uniqueReqId from '@core/middlewares/uniqueReqId.middleware';
 import http404 from '@components/404/404.router';
 import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
+import cors from 'cors';
 import blockchainService from './services/blockchainService';
 import transactionService from './services/transactionService';
 
@@ -22,6 +23,7 @@ transactionService.startPolling();
 const app: Application = express();
 
 // Add CORS middleware
+app.use(cors());
 
 app.use(lusca.xssProtection(true));
 app.use(expressMongoSanitize());
