@@ -15,7 +15,7 @@ const retrieveTransactionsByHashId = async (req: Request, res: Response) => {
     const transaction = await readByHashId(req.params.hashId);
     if (!transaction) {
       // If the transaction is not found, return a 404 status code
-      return res.status(404).json({ message: 'Transaction not found' });
+      // return res.status(404).json({ message: 'Transaction not found' });
     }
     // If the transaction is found, return it with a 200 status code
     res.status(200).json({ message: 'Transaction retrieved successfully', output: transaction });
