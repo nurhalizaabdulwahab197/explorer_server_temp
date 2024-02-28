@@ -16,7 +16,7 @@ class BlockchainService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 10000; // Poll every 10 seconds
+    this.pollingInterval = 30000; // Poll every 10 seconds
   }
 
   startPolling() {
@@ -80,7 +80,7 @@ class BlockchainService {
         // ... add all the other properties as needed
       };
 
-      await saveBlock(block);
+      // await saveBlock(block);
       await setLastSyncedBlock(blockNumber);
 
       // Process the next block

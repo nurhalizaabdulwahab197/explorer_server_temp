@@ -1,11 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import {
-  create,
-  read,
-  update,
-  deleteById,
-} from '@components/user/user.service';
+import { create, read, update, deleteById } from '@components/user/user.service';
 import { IUser } from '@components/user/user.interface';
 
 const createUser = async (req: Request, res: Response) => {
