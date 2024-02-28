@@ -4,7 +4,9 @@ import { TransactionModel } from './transaction.model';
 
 const read = async (): Promise<ITransaction[]> => {
   try {
-    const transactions: ITransaction[] = await TransactionModel.find();
+    const transactions: ITransaction[] = await TransactionModel.aggregate([
+      { $sort: { timestamp: -1 } },
+    ]);
     return transactions;
   } catch (error) {
     logger.error('Error occurred while reading transactions:', error);
