@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { read, readByHash, getLatestList, readBlockByPage } from '@components/block/block.service';
+import {
+  read,
+  readByHash,
+  getLatestList,
+  readBlockByPage,
+  readBlockListWithSkip,
+} from '@components/block/block.service';
 // import { IBlock } from '@components/block/block.interface';
 
 // const createBlock = async (req: Request, res: Response) => {
@@ -11,7 +17,7 @@ import { read, readByHash, getLatestList, readBlockByPage } from '@components/bl
 // };
 
 const readBlockPage = async (req: Request, res: Response) => {
-  const pageNumber: number = parseInt(req.params.number, 10);
+  const pageNumber: number = parseInt(req.params.pageNumber, 10);
   const output = await readBlockByPage(pageNumber);
   res.status(httpStatus.OK);
   res.send({ message: 'Read latest block list', output });
@@ -47,6 +53,13 @@ const getLatestBlockList = async (req: Request, res: Response) => {
   res.send({ message: 'Read latest block list', output });
 };
 
+const readBlockWithSkip = async (req: Request, res: Response) => {
+  const skipNum: number = parseInt(req.params.skipNum, 10);
+  const output = await readBlockListWithSkip(skipNum);
+  res.status(httpStatus.OK);
+  res.send({ message: 'Read latest block list', output });
+};
+
 // const getLastSyncedBlocks = async (res: Response) => {
 //   await getLastSyncedBlock();
 //   res.status(httpStatus.OK);
@@ -72,4 +85,4 @@ const getLatestBlockList = async (req: Request, res: Response) => {
 //   res.send({ message: 'Removed' });
 // };
 
-export { readBlock, readBlockByHash, getLatestBlockList, readBlockPage };
+export { readBlock, readBlockByHash, getLatestBlockList, readBlockPage, readBlockWithSkip };

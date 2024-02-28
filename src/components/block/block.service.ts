@@ -65,6 +65,22 @@ const readBlockByPage = async (page: number): Promise<IBlock[]> => {
   }
 };
 
+const readBlockListWithSkip = async (skipNum: number): Promise<IBlock[]> => {
+  try {
+    const pageSize = 9;
+    const skipCount = skipNum;
+    const pageBlock = await BlockModel.find()
+      .sort({ timestamp: -1 })
+      .skip(skipCount)
+      .limit(pageSize);
+
+    return pageBlock;
+  } catch (error) {
+    console.error('Error while reading the blocks:', error);
+    throw error;
+  }
+};
+
 export {
   create,
   read,
@@ -73,4 +89,5 @@ export {
   getLastSyncedBlock,
   setLastSyncedBlock,
   readBlockByPage,
+  readBlockListWithSkip,
 };

@@ -199,6 +199,45 @@
         }
       }
     },
+    "/api/block/blockListWithSkip/{skipNum}":{
+      "get":{
+        "tags":["read block"],
+        "summary": "Read block list with skip",
+        "parameters": [
+          {
+            "name": "skipNum",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"  
+            },
+            "description": "skip number for block list"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseWithMessage"  
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block list not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/user/{id}": {
       "get": {
         "tags": ["read user"],
@@ -285,7 +324,7 @@
       }
     },
     "/api/transaction": {
-      "post": {
+      "get": {
         "tags": ["retrieve transactions"],
         "description": "Retrieve all transactions",
         "responses": {
