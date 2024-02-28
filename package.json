@@ -41,7 +41,7 @@
     "axios": "^1.6.7",
     "compose": "^0.1.2",
     "cors": "^2.8.5",
-    "docker": "^1.0.0",
+    "docker": "^0.2.14",
     "dotenv": "^14.3.2",
     "express": "^4.17.1",
     "express-http-context": "^1.2.4",

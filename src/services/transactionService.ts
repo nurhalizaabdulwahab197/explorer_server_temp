@@ -61,14 +61,12 @@ class TransactionService {
               )
             ),
           };
-          console.log(tx);
+          logger.info(`Transactions saved: ${tx.hash}`);
           return TransactionModel.create(transactionData);
         }
       });
 
       await Promise.all(transactionPromises);
-
-      logger.info('Transactions saved.');
     } catch (error) {
       logger.error('Error detecting and saving transactions:', error);
     }

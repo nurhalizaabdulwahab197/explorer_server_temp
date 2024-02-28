@@ -1,5 +1,4 @@
 import express, { Application } from 'express';
-
 import api from 'api';
 import lusca from 'lusca';
 import cors from 'cors';
@@ -16,12 +15,17 @@ import blockchainService from './services/blockchainService';
 import transactionService from './services/transactionService';
 import nodeService from './services/nodeService';
 
+// Import the CORS middleware
+
 db.connect();
 blockchainService.startPolling();
 transactionService.startPolling();
 nodeService.startPolling();
 
 const app: Application = express();
+
+// Add CORS middleware
+app.use(cors());
 
 app.use(lusca.xssProtection(true));
 app.use(expressMongoSanitize());
