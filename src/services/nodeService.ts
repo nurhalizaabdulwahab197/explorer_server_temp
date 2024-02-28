@@ -14,7 +14,7 @@ class NodeService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 10000; // Poll every 10 seconds
+    this.pollingInterval = 5000; // Poll every 5 seconds
   }
 
   startPolling() {
@@ -84,6 +84,7 @@ class NodeService {
           try {
             const createdNode = await NodeModel.create(nodeDetails);
             logger.info(`Node created: ${createdNode.node_id}`);
+            // console.log('Node Details:', nodeDetails);
           } catch (createError) {
             logger.error('Error creating node:', createError);
           }
@@ -107,6 +108,27 @@ class NodeService {
     }
 
     return 0;
+  }
+
+  // no use
+  async getNodeIds(): Promise<string[] | null> {
+    try {
+      // Make an RPC call to get information about connected peers
+      const peersResponse = await axios.post(config.privateNetwork, {
+        jsonrpc: '2.0',
+        method: 'admin_peers',
+        params: [],
+        id: 1,
+      });
+
+      const enodeIds = peersResponse.data.result.map((peer) => peer?.id || 'Unknown');
+      console.log('Enode IDs:', enodeIds);
+
+      return enodeIds;
+    } catch (error) {
+      console.error('Error fetching enode IDs:', error);
+      throw error; // Rethrow the error for handling in higher layers
+    }
   }
 }
 
