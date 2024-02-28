@@ -17,6 +17,10 @@
     {
       "url": "https://production.example.com",
       "description": "Production server"
+    },
+    {
+      "url": "http://localhost:4000",
+      "description": "localhost"
     }
   ],
   "paths": {
@@ -410,6 +414,84 @@
           }
         }
       }
+    },
+    "/api/nodes": {
+      "get": {
+        "tags": ["fetch all node details"],
+        "description": "Fetch all node details",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "nodeDetails": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/NodeDetail"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/nodes/{node_id}": {
+      "get": {
+        "tags": ["fetch node details"],
+        "description": "Fetch node details by ID",
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the node to fetch details for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodeDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Node not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Node not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -478,6 +560,42 @@
             "type": "string"
           }
         }
+      },
+      "NodeDetail": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "peers": {
+            "type": "number"
+          },
+          "blocks": {
+            "type": "number"
+          },
+          "queued": {
+            "type": "number"
+          },
+          "client": {
+            "type": "string"
+          },
+          "node_id": {
+            "type": "string"
+          },
+          "node_name": {
+            "type": "string"
+          },
+          "enode": {
+            "type": "string"
+          },
+          "rpc_url": {
+            "type": "string"
+          },
+          "local_host": {
+            "type": "string"
+          }
+        },
+        "required": ["status", "peers", "blocks", "queued", "client", "node_id", "node_name", "enode", "rpc_url"]
       }
     },
     "securitySchemes": {

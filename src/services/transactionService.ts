@@ -29,8 +29,8 @@ class TransactionService {
       }
 
       // Process transactions in the latest block
-      // eslint-disable-next-line no-restricted-syntax
-      for (const tx of latestBlock.transactions) {
+      // eslint-disable-next-line consistent-return
+      const transactionPromises = latestBlock.transactions.map(async (tx) => {
         if (typeof tx !== 'string') {
           const transactionData = {
             hash: tx.hash,
@@ -61,12 +61,12 @@ class TransactionService {
               )
             ),
           };
-
-          // eslint-disable-next-line no-await-in-loop
-          await TransactionModel.create(transactionData);
-          logger.info(`Transaction saved: ${tx.hash}`);
+          logger.info(`Transactions saved: ${tx.hash}`);
+          return TransactionModel.create(transactionData);
         }
-      }
+      });
+
+      await Promise.all(transactionPromises);
     } catch (error) {
       logger.error('Error detecting and saving transactions:', error);
     }
