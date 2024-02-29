@@ -1,11 +1,12 @@
 // nodeService.ts
-import axios from 'axios'; // yam
-import os from 'os'; // yam
+import axios from 'axios';
+import os from 'os';
 import Web3 from 'web3';
 import config from '@config/config';
 import logger from '@core/utils/logger';
 import { INode } from '@components/node/node.interface';
-import { NodeModel } from '@components/node/node.model';
+
+const nodeCache: Record<string, INode> = {};
 
 class NodeService {
   web3: Web3;
@@ -15,14 +16,22 @@ class NodeService {
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
     this.pollingInterval = 5000; // Poll every 5 seconds
+
+    // Populate nodeCache initially
+    this.startPolling();
   }
 
   startPolling() {
-    setInterval(() => this.fetchNodeDetails(), this.pollingInterval * 2); // Adjust the interval as needed
+    setInterval(async () => {
+      await this.fetchNodeDetails(); // Update nodeCache periodically
+    }, this.pollingInterval);
   }
 
   async fetchNodeDetails() {
     try {
+      // Clear existing nodes in cache
+      Object.keys(nodeCache).forEach((key) => delete nodeCache[key]);
+
       const peerInfoResponse = await axios.post(config.privateNetwork, {
         jsonrpc: '2.0',
         method: 'admin_peers',
@@ -31,104 +40,74 @@ class NodeService {
       });
 
       const peers = peerInfoResponse.data.result;
-
-      // logger.info('Connected Peers:');
-      // peers.forEach((peer: any, index: number) => {
-      //   logger.info(`Peer ${index + 1}:`);
-      //   Object.entries(peer).forEach(([key, value]) => {
-      //     logger.info(`  ${key}: ${value}`);
-      //   });
-      // });
-
       const peerCount = await this.web3.eth.net.getPeerCount();
       const peerStatus = await this.web3.eth.isSyncing();
-      const localHost = Object.values(os.networkInterfaces())
-        .flat()
-        .filter((info) => info.family === 'IPv4' && !info.internal)
-        .map((info) => info.address)
-        .find(Boolean);
 
-      // logger.info(`Number of connected peers: ${peerStatus}`);
-
-      // logger.info('Connected Peers:');
-      // peers.forEach((peer: any, index: number) => {
-      //   logger.info(`Peer ${index + 1} ID: ${peer.enode}`);
-      // });
-
-      // const peerDetailsArray: INode[] = [];
-
-      await NodeModel.deleteMany({});
-
-      const nodeDetailsArray = await Promise.all(
-        peers.map(async (peer) => {
-          const clientMatch = `${peer.name}`.match(/^([^/]+)/);
-          const CLIENT = clientMatch ? clientMatch[1] : 'Unknown';
-          const BLOCK = Number(peerStatus ? 0 : await this.web3.eth.getBlockNumber());
-          const QUEUE = Number(
-            peerStatus ? 0 : await this.web3.eth.getBlockTransactionCount('pending')
-          );
-
+      // Process peer data and update or add to nodeCache
+      await Promise.all(
+        peers.map(async (peer: any) => {
           const nodeDetails: INode = {
             status: peerStatus ? 'Syncing' : 'Running',
             peers: Number(peerCount),
-            blocks: BLOCK,
-            queued: QUEUE,
-            client: CLIENT,
-            node_id: `${peer.id}`.toString(),
-            node_name: `${peer.name}`.toString(),
-            enode: `${peer.enode}`.toString(),
+            blocks: Number(peer.status ? 0 : await this.web3.eth.getBlockNumber()),
+            queued: Number(
+              peer.status ? 0 : await this.web3.eth.getBlockTransactionCount('pending')
+            ),
+            client: peer.name ? peer.name.match(/^([^/]+)/)?.[1] || 'Unknown' : 'Unknown',
+            node_id: peer.id.toString(),
+            node_name: peer.name.toString(),
+            enode: peer.enode.toString(),
             rpc_url: config.privateNetwork,
-            local_host: localHost || 'Unknown',
+            local_host: this.getLocalHost(),
           };
 
-          try {
-            const createdNode = await NodeModel.create(nodeDetails);
-            logger.info(`Node created: ${createdNode.node_id}`);
-            // console.log('Node Details:', nodeDetails);
-          } catch (createError) {
-            logger.error('Error creating node:', createError);
+          // Check if node with the same ID exists in nodeCache
+          if (nodeCache[nodeDetails.node_id]) {
+            // Update existing node
+            Object.assign(nodeCache[nodeDetails.node_id], nodeDetails);
+            logger.info(`Node updated: ${nodeDetails.node_id}`);
+          } else {
+            // Add new node to cache
+            nodeCache[nodeDetails.node_id] = nodeDetails;
+
+            try {
+              logger.info(`Node created: ${nodeDetails.node_id}`);
+              // console.log('Node Details:', nodeDetails);
+            } catch (createError) {
+              logger.error('Error creating node:', createError);
+            }
           }
 
           return nodeDetails;
         })
       );
-
-      // peerDetailsArray.push(nodeDetails);
-      // logger.info('Peer Details Array:');
-      // nodeDetailsArray.forEach((peerDetail, index) => {
-      //   logger.info(`Peer ${index + 1} Information:`);
-      //   Object.entries(peerDetail).forEach(([key, value]) => {
-      //     logger.info(`  ${key}: ${value}`);
-      //   });
-      // });
-
-      return peers;
     } catch (error) {
       logger.error('Error:', error);
     }
-
-    return 0;
   }
 
-  // no use
-  async getNodeIds(): Promise<string[] | null> {
+  getLocalHost() {
+    return (
+      Object.values(os.networkInterfaces())
+        .flat()
+        .filter((info) => info.family === 'IPv4' && !info.internal)
+        .map((info) => info.address)
+        .find(Boolean) || 'Unknown'
+    );
+  }
+
+  async readNodes(): Promise<INode[]> {
     try {
-      // Make an RPC call to get information about connected peers
-      const peersResponse = await axios.post(config.privateNetwork, {
-        jsonrpc: '2.0',
-        method: 'admin_peers',
-        params: [],
-        id: 1,
-      });
-
-      const enodeIds = peersResponse.data.result.map((peer) => peer?.id || 'Unknown');
-      console.log('Enode IDs:', enodeIds);
-
-      return enodeIds;
+      const nodes: INode[] = Object.values(nodeCache);
+      return nodes;
     } catch (error) {
-      console.error('Error fetching enode IDs:', error);
-      throw error; // Rethrow the error for handling in higher layers
+      logger.error('Error occurred while reading nodes:', error);
+      throw error;
     }
+  }
+
+  async readNodeByNodeID(nodeID: string): Promise<INode | undefined> {
+    return nodeCache[nodeID];
   }
 }
 
