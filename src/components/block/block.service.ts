@@ -23,6 +23,19 @@ const read = async (blockNumber: number): Promise<IBlock> => {
   return block as IBlock;
 };
 
+const readByHash = async (blockHash: string): Promise<IBlock> => {
+  logger.debug(`Sent block.hash ${blockHash}`);
+  const block = await BlockModel.findOne({ hash: blockHash });
+  return block as IBlock;
+};
+const getLatestList = async (): Promise<IBlock[]> => {
+  const blocks: IBlock[] = await BlockModel.aggregate([
+    { $sort: { timestamp: -1 } },
+    { $limit: 10 },
+  ]);
+  return blocks;
+};
+
 // Function to get the last synced block number
 const getLastSyncedBlock = async (): Promise<number> => {
   // Find the highest block number in your database
@@ -36,4 +49,45 @@ const setLastSyncedBlock = async (blockNumber: number): Promise<void> => {
   // or as a separate function if you're storing this elsewhere.
 };
 
-export { create, read, getLastSyncedBlock, setLastSyncedBlock };
+const readBlockByPage = async (page: number): Promise<IBlock[]> => {
+  try {
+    const pageSize = 10;
+    const skipCount = (page - 1) * pageSize;
+    const pageBlock = await BlockModel.find()
+      .sort({ timestamp: -1 })
+      .skip(skipCount)
+      .limit(pageSize);
+
+    return pageBlock;
+  } catch (error) {
+    console.error('Error while reading the blocks:', error);
+    throw error;
+  }
+};
+
+const readBlockListWithSkip = async (skipNum: number): Promise<IBlock[]> => {
+  try {
+    const pageSize = 9;
+    const skipCount = skipNum;
+    const pageBlock = await BlockModel.find()
+      .sort({ timestamp: -1 })
+      .skip(skipCount)
+      .limit(pageSize);
+
+    return pageBlock;
+  } catch (error) {
+    console.error('Error while reading the blocks:', error);
+    throw error;
+  }
+};
+
+export {
+  create,
+  read,
+  readByHash,
+  getLatestList,
+  getLastSyncedBlock,
+  setLastSyncedBlock,
+  readBlockByPage,
+  readBlockListWithSkip,
+};

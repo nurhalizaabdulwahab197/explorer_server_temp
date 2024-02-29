@@ -4,9 +4,7 @@ import { TransactionModel } from './transaction.model';
 
 const read = async (): Promise<ITransaction[]> => {
   try {
-    const transactions: ITransaction[] = await TransactionModel.aggregate([
-      { $sort: { timestamp: -1 } },
-    ]);
+    const transactions: ITransaction[] = await TransactionModel.find();
     return transactions;
   } catch (error) {
     logger.error('Error occurred while reading transactions:', error);
@@ -20,5 +18,17 @@ const readByHashId = async (hashId: String): Promise<ITransaction> => {
   return transaction as ITransaction;
 };
 
+const getLatestList = async (): Promise<ITransaction[]> => {
+  const blocks: ITransaction[] = await TransactionModel.aggregate([
+    { $sort: { timestamp: -1 } },
+    { $limit: 10 },
+  ]);
+  return blocks;
+};
+
+
+
+
 // eslint-disable-next-line import/prefer-default-export
-export { read, readByHashId };
+export { getLatestList, read, readByHashId };
+

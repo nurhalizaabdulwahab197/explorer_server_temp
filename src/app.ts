@@ -11,11 +11,10 @@ import uniqueReqId from '@core/middlewares/uniqueReqId.middleware';
 import http404 from '@components/404/404.router';
 import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
+
 import blockchainService from './services/blockchainService';
 import transactionService from './services/transactionService';
 import nodeService from './services/nodeService';
-
-// Import the CORS middleware
 
 db.connect();
 blockchainService.startPolling();
@@ -23,18 +22,13 @@ transactionService.startPolling();
 nodeService.startPolling();
 
 const app: Application = express();
-
-// Add CORS middleware
 app.use(cors());
-
 app.use(lusca.xssProtection(true));
 app.use(expressMongoSanitize());
 app.use(httpContext.middleware);
 app.use(httpLogger.successHandler);
 app.use(httpLogger.errorHandler);
 app.use(uniqueReqId);
-// Allow requests from all origins
-app.use(cors());
 app.use(express.json());
 app.use(consts.API_ROOT_PATH, api);
 app.use(swaggerApiDocs);

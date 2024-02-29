@@ -16,11 +16,104 @@ class BlockchainService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 30000; // Poll every 10 seconds
+    this.pollingInterval = 30000;
   }
 
   startPolling() {
     setInterval(() => this.syncBlocks(), this.pollingInterval);
+  }
+
+  async traceBlockInternalTransactions(blockNumber: number): Promise<number> {
+    try {
+      const block = await this.web3.eth.getBlock(blockNumber);
+
+      if (!block.transactions || block.transactions.length === 0) {
+        // Return 0 if there are no transactions
+        return 0;
+      }
+
+      const transactionTracesPromises = [];
+
+      for (const txHash of block.transactions) {
+        const tracePromise = new Promise((resolve, reject) => {
+          this.web3.currentProvider.send(
+            {
+              jsonrpc: '2.0',
+              method: 'debug_traceTransaction',
+              params: [txHash, {}],
+              id: new Date().getTime(),
+            },
+            (error, response) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(response);
+              }
+            }
+          );
+        });
+
+        transactionTracesPromises.push(tracePromise);
+      }
+
+      const transactionTraces = await Promise.all(transactionTracesPromises);
+
+      // Process the traces to extract internal transactions
+      let contractInternalTransactionCount = 0;
+
+      transactionTraces.forEach((trace) => {
+        if (trace.result && trace.result.structLogs) {
+          // Check if any structLog has a "depth" greater than 0, indicating an internal call
+          if (trace.result.structLogs.some((log) => log.depth > 0)) {
+            contractInternalTransactionCount++;
+          }
+        }
+      });
+
+      return contractInternalTransactionCount;
+    } catch (error) {
+      console.error(error);
+      // Return -1 for other errors
+      return -1;
+    }
+  }
+
+  async calculateTransactionFees(blockNumber: number): Promise<number> {
+    try {
+      const block = await this.web3.eth.getBlock(blockNumber);
+
+      if (!block) {
+        console.error(`Block not found for block number ${blockNumber}`);
+        return 0;
+      }
+
+      let totalTransactionFee = 0;
+      if (block.transactions && block.transactions.length > 0) {
+        block.transactions.forEach(async (txHash) => {
+          const tx = await this.web3.eth.getTransaction(txHash);
+
+          if (!tx) {
+            console.error(`Transaction not found for hash ${txHash}`);
+            return;
+          }
+
+          const gasPrice = Number(tx.gasPrice);
+          const gas = Number(tx.gas);
+
+          const transactionFee = Number(
+            this.web3.utils.fromWei((gasPrice * gas).toString(), 'ether')
+          );
+
+          // Accumulate transaction fees
+          totalTransactionFee += transactionFee;
+        });
+      }
+
+      return totalTransactionFee;
+    } catch (error) {
+      console.error('Error calculating transaction fees:', error);
+      return 0;
+    }
   }
 
   async fetchLatestBlock() {
@@ -28,25 +121,33 @@ class BlockchainService {
       const blockData = await this.web3.eth.getBlock('latest');
 
       const block: IBlock = {
-        number: Number(blockData.number), // Convert bigint to string
+        number: Number(blockData.number),
         hash: blockData.hash,
         parentHash: blockData.parentHash,
-        nonce: Number(blockData.nonce), // Convert bigint to string if it's not undefined
+        nonce: Number(blockData.nonce),
         sha3Uncles: blockData.sha3Uncles,
         transactions: blockData.transactions?.map((tx) => (typeof tx === 'string' ? tx : tx.hash)),
         miner: blockData.miner,
-        difficulty: Number(blockData.difficulty), // Convert bigint to string
-        totalDifficulty: Number(blockData.totalDifficulty), // Convert bigint to string
-        size: Number(blockData.size), // Convert bigint to string
+        difficulty: Number(blockData.difficulty),
+        totalDifficulty: Number(blockData.totalDifficulty),
+        size: Number(blockData.size),
         extraData: blockData.extraData,
-        gasLimit: Number(blockData.gasLimit), // Convert bigint to string
-        gasUsed: Number(blockData.gasUsed), // Convert bigint to string
+        gasLimit: Number(blockData.gasLimit),
+        gasUsed: Number(blockData.gasUsed),
         timestamp: new Date(Number(blockData.timestamp) * 1000),
-        // ... add all the other properties as needed
+        transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
+        transactionFee: Number(await this.calculateTransactionFees(Number(blockData.number))),
+        blockReward: Number(await this.calculateTransactionFees(Number(blockData.number))) + 0,
+        internalTransaction: Number(
+          await this.traceBlockInternalTransactions(Number(blockData.number))
+        ),
+        // ... (other properties)
       };
 
+      block.transactionFee = await this.calculateTransactionFees(Number(blockData.number));
+
       // Save the block using the block service
-      // await createBlock(block);
+      await saveBlock(block);
       logger.info(`Block number ${block.number} saved to the database.`);
     } catch (error) {
       logger.error('Error fetching the latest block:', error);
@@ -63,21 +164,27 @@ class BlockchainService {
     try {
       const blockData = await this.web3.eth.getBlock(blockNumber);
       const block: IBlock = {
-        number: Number(blockData.number), // Convert bigint to string
+        number: Number(blockData.number),
         hash: blockData.hash,
         parentHash: blockData.parentHash,
-        nonce: Number(blockData.nonce), // Convert bigint to string if it's not undefined
+        nonce: Number(blockData.nonce),
         sha3Uncles: blockData.sha3Uncles,
         transactions: blockData.transactions?.map((tx) => (typeof tx === 'string' ? tx : tx.hash)),
         miner: blockData.miner,
-        difficulty: Number(blockData.difficulty), // Convert bigint to string
-        totalDifficulty: Number(blockData.totalDifficulty), // Convert bigint to string
-        size: Number(blockData.size), // Convert bigint to string
+        difficulty: Number(blockData.difficulty),
+        totalDifficulty: Number(blockData.totalDifficulty),
+        size: Number(blockData.size),
         extraData: blockData.extraData,
-        gasLimit: Number(blockData.gasLimit), // Convert bigint to string
-        gasUsed: Number(blockData.gasUsed), // Convert bigint to string
+        gasLimit: Number(blockData.gasLimit),
+        gasUsed: Number(blockData.gasUsed),
         timestamp: new Date(Number(blockData.timestamp) * 1000),
-        // ... add all the other properties as needed
+        transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
+        transactionFee: Number(await this.calculateTransactionFees(Number(blockData.number))),
+        blockReward: Number(await this.calculateTransactionFees(Number(blockData.number))) + 0,
+        internalTransaction: Number(
+          await this.traceBlockInternalTransactions(Number(blockData.number))
+        ),
+        // ... (other properties)
       };
 
       // await saveBlock(block);
