@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { read, readByHashId } from './transaction.service';
+import { read, readByHashId ,getLatestList} from './transaction.service';
 
 // Retrieve transactions from the database
 // eslint-disable-next-line consistent-return
@@ -15,7 +15,7 @@ const retrieveTransactionsByHashId = async (req: Request, res: Response) => {
     const transaction = await readByHashId(req.params.hashId);
     if (!transaction) {
       // If the transaction is not found, return a 404 status code
-      // return res.status(404).json({ message: 'Transaction not found' });
+      return res.status(404).json({ message: 'Transaction not found' });
     }
     // If the transaction is found, return it with a 200 status code
     res.status(200).json({ message: 'Transaction retrieved successfully', output: transaction });
@@ -25,5 +25,11 @@ const retrieveTransactionsByHashId = async (req: Request, res: Response) => {
   }
 };
 
+const getLatestTransactionList = async (req: Request, res: Response) => {
+  const output = await getLatestList();
+  res.status(httpStatus.OK);
+  res.send({ message: 'Read latest transaction list', output });
+};
+
 // eslint-disable-next-line import/prefer-default-export
-export { retrieveTransactions, retrieveTransactionsByHashId };
+export { retrieveTransactions, retrieveTransactionsByHashId,getLatestTransactionList };
