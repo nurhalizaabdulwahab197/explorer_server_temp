@@ -1,6 +1,12 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { read, readByHashId ,getLatestList} from './transaction.service';
+import {
+  read,
+  readByHashId,
+  getLatestList,
+  getThirtyDayTransactionNumber,
+  getTransactionStatistics,
+} from './transaction.service';
 
 // Retrieve transactions from the database
 // eslint-disable-next-line consistent-return
@@ -31,5 +37,17 @@ const getLatestTransactionList = async (req: Request, res: Response) => {
   res.send({ message: 'Read latest transaction list', output });
 };
 
+const retrieveThirtyDayTransactionNumber = async (req: Request, res: Response) => {
+  const output = await getThirtyDayTransactionNumber();
+  const statistics = await getTransactionStatistics();
+  res.status(httpStatus.OK);
+  res.send({ message: 'Read latest thirty day transaction number', output, statistics });
+};
+
 // eslint-disable-next-line import/prefer-default-export
-export { retrieveTransactions, retrieveTransactionsByHashId,getLatestTransactionList };
+export {
+  retrieveTransactions,
+  retrieveTransactionsByHashId,
+  getLatestTransactionList,
+  retrieveThirtyDayTransactionNumber,
+};
