@@ -467,7 +467,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResponseWithMessage"  
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/latestThirtyDay/transactionNumber": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve latestThirtyDayTransactionNumber",
+        "responses": {
+          "200": {
+            "description": "Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
                 }
               }
             }

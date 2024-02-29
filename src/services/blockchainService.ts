@@ -147,7 +147,7 @@ class BlockchainService {
       block.transactionFee = await this.calculateTransactionFees(Number(blockData.number));
 
       // Save the block using the block service
-      await saveBlock(block);
+      // await saveBlock(block);
       logger.info(`Block number ${block.number} saved to the database.`);
     } catch (error) {
       logger.error('Error fetching the latest block:', error);
@@ -187,7 +187,7 @@ class BlockchainService {
         // ... (other properties)
       };
 
-      // await saveBlock(block);
+      await saveBlock(block);
       await setLastSyncedBlock(blockNumber);
 
       // Process the next block

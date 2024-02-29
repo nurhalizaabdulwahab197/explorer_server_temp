@@ -7,6 +7,8 @@ import {
   readTransactionByPage,
   readNextTransactionByHashId,
   retrievePreviousTransactionsByHashId,
+  getThirtyDayTransactionNumber,
+  getTransactionStatistics,
 } from './transaction.service';
 
 // Retrieve transactions from the database
@@ -76,6 +78,13 @@ const retrievePrevTransactionsByHashId = async (req: Request, res: Response) => 
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 };
+const retrieveThirtyDayTransactionNumber = async (req: Request, res: Response) => {
+  const output = await getThirtyDayTransactionNumber();
+  const statistics = await getTransactionStatistics();
+  res.status(httpStatus.OK);
+  res.send({ message: 'Read latest thirty day transaction number', output, statistics });
+};
+
 // eslint-disable-next-line import/prefer-default-export
 export {
   retrieveTransactions,
@@ -84,4 +93,5 @@ export {
   readByPage,
   retrieveNextTransactionsByHashId,
   retrievePrevTransactionsByHashId,
+  retrieveThirtyDayTransactionNumber,
 };
