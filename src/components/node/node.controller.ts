@@ -1,18 +1,15 @@
 // node.controller.ts
-import logger from '@core/utils/logger';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { readNode, readNodeByNodeID } from './node.service';
+import NodeService from '@services/nodeService';
 
-const retrieveNode = async (req: Request, res: Response) => {
-  res.status(httpStatus.OK);
-  res.send({ message: 'Read', output: await readNode() });
+const retrieveNodes = async (req: Request, res: Response) => {
+  res.status(httpStatus.OK).json({ message: 'Read', output: await NodeService.readNodes() });
 };
 
 const retrieveNodeByNodeID = async (req: Request, res: Response) => {
   try {
-    logger.debug(req.params.node_id);
-    const node = await readNodeByNodeID(req.params.node_id);
+    const node = await NodeService.readNodeByNodeID(req.params.node_id);
     if (!node) {
       return res.status(404).json({ message: 'Node not found' });
     }
@@ -22,4 +19,4 @@ const retrieveNodeByNodeID = async (req: Request, res: Response) => {
   }
 };
 
-export { retrieveNode, retrieveNodeByNodeID };
+export { retrieveNodes, retrieveNodeByNodeID };
