@@ -88,25 +88,34 @@ class BlockchainService {
       }
 
       let totalTransactionFee = 0;
+
       if (block.transactions && block.transactions.length > 0) {
-        block.transactions.forEach(async (txHash) => {
+        const transactionPromises = block.transactions.map(async (txHash) => {
           const tx = await this.web3.eth.getTransaction(txHash);
 
           if (!tx) {
             console.error(`Transaction not found for hash ${txHash}`);
-            return;
+            return 0;
           }
 
           const gasPrice = Number(tx.gasPrice);
           const gas = Number(tx.gas);
 
+          if (isNaN(gasPrice) || isNaN(gas)) {
+            console.error(`Invalid gasPrice or gas for hash ${txHash}`);
+            return 0;
+          }
+
           const transactionFee = Number(
             this.web3.utils.fromWei((gasPrice * gas).toString(), 'ether')
           );
 
-          // Accumulate transaction fees
-          totalTransactionFee += transactionFee;
+          return transactionFee;
         });
+
+        const transactionFees = await Promise.all(transactionPromises);
+
+        totalTransactionFee = transactionFees.reduce((acc, fee) => acc + fee, 0);
       }
 
       return totalTransactionFee;
@@ -187,7 +196,7 @@ class BlockchainService {
         // ... (other properties)
       };
 
-      await saveBlock(block);
+      // await saveBlock(block);
       await setLastSyncedBlock(blockNumber);
 
       // Process the next block
