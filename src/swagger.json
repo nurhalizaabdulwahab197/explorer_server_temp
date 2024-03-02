@@ -313,6 +313,35 @@
         }
       }
     },
+    "/api/transaction/latest": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve the count of transactions",
+        "responses": {
+          "200": {
+            "description": "Transactions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ResponseWithMessage"  
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/transaction/{hashId}": {
       "get": {
         "tags": ["retrieve transactions"],
