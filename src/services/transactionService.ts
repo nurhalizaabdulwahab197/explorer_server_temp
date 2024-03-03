@@ -62,7 +62,6 @@ class TransactionService {
             ),
           };
           logger.info(`Transactions saved: ${tx.hash}`);
-          console.log(tx);
           return TransactionModel.create(transactionData);
         }
       });
