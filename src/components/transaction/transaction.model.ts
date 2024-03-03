@@ -18,7 +18,7 @@ const transactionSchema = new mongoose.Schema<ITransaction>(
     gasUsed: { type: Number, required: true },
     gasFees: { type: Number, required: true },
     timestamp: { type: Date, required: true },
-    // maxFeePerGas: { type: Number, required: true },
+    maxFeePerGas: { type: Number, required: true },
     maxPriorityFeePerGas: { type: Number, required: true },
     baseFeePerGas: { type: Number, required: true },
     // ... any other properties you want to include
