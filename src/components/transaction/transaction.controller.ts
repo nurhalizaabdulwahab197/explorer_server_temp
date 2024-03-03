@@ -9,6 +9,7 @@ import {
   retrievePreviousTransactionsByHashId,
   getThirtyDayTransactionNumber,
   getTransactionStatistics,
+  getTransactionCount,
 } from './transaction.service';
 
 // Retrieve transactions from the database
@@ -85,6 +86,11 @@ const retrieveThirtyDayTransactionNumber = async (req: Request, res: Response) =
   res.send({ message: 'Read latest thirty day transaction number', output, statistics });
 };
 
+const getTransactionCountNumber = async (req: Request, res: Response) => {
+  res.status(httpStatus.OK);
+  res.send({ message: 'Read', output: await getTransactionCount() });
+};
+
 // eslint-disable-next-line import/prefer-default-export
 export {
   retrieveTransactions,
@@ -94,4 +100,5 @@ export {
   retrieveNextTransactionsByHashId,
   retrievePrevTransactionsByHashId,
   retrieveThirtyDayTransactionNumber,
+  getTransactionCountNumber,
 };

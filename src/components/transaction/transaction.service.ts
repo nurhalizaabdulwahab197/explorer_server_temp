@@ -161,6 +161,13 @@ const getTransactionStatistics = async (): Promise<{
     throw error;
   }
 };
+
+const getTransactionCount = async (): Promise<number> => {
+  // Count the number of documents in the TransactionModel collection
+  const transactionCount = await TransactionModel.countDocuments();
+  return transactionCount;
+};
+
 // eslint-disable-next-line import/prefer-default-export
 export {
   getLatestList,
@@ -171,4 +178,5 @@ export {
   retrievePreviousTransactionsByHashId,
   getThirtyDayTransactionNumber,
   getTransactionStatistics,
+  getTransactionCount,
 };
