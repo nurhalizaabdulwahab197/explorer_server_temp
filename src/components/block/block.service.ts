@@ -81,6 +81,33 @@ const readBlockListWithSkip = async (skipNum: number): Promise<IBlock[]> => {
   }
 };
 
+const getBlockTime = async (): Promise<number> => {
+  try {
+    // Get the latest block number
+    const latestBlockNumber = await getLastSyncedBlock();
+
+    // Get the timestamp of the latest block
+    const latestBlock = await read(latestBlockNumber);
+    const latestBlockTimestamp = latestBlock.timestamp;
+
+    // Get the block number of a previous block, e.g., 100 blocks ago
+    const previousBlockNumber = latestBlockNumber - 1;
+
+    // Get the timestamp of the previous block
+    const previousBlock = await read(previousBlockNumber);
+    const previousBlockTimestamp = previousBlock.timestamp;
+
+    // Calculate the block time (block interval) in seconds
+    const timestampLatest = new Date(latestBlockTimestamp).getTime() / 1000;
+    const timestampPrev = new Date(previousBlockTimestamp).getTime() / 1000;
+    const blockTime = timestampLatest - timestampPrev;
+
+    return blockTime;
+  } catch (error) {
+    return 0;
+  }
+};
+
 export {
   create,
   read,
@@ -90,4 +117,5 @@ export {
   setLastSyncedBlock,
   readBlockByPage,
   readBlockListWithSkip,
+  getBlockTime,
 };

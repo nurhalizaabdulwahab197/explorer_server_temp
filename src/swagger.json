@@ -199,6 +199,30 @@
         }
       }
     },
+    "/api/block/getLastSyncBlock": {
+      "get": {
+        "tags": ["read block"],
+        "summary": "Read last sync blocks",
+        "responses": {
+          "200": {
+            "description": "block",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/user/{id}": {
       "get": {
         "tags": ["read user"],

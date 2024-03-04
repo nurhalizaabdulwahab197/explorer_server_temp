@@ -71,7 +71,7 @@ class NodeService {
             nodeCache[nodeDetails.node_id] = nodeDetails;
 
             try {
-              logger.info(`Node created: ${nodeDetails.node_id}`);
+              // logger.info(`Node created: ${nodeDetails.node_id}`);
               // console.log('Node Details:', nodeDetails);
             } catch (createError) {
               logger.error('Error creating node:', createError);

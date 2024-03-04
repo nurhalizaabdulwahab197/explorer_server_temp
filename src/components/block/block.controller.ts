@@ -7,6 +7,7 @@ import {
   readBlockByPage,
   readBlockListWithSkip,
   getLastSyncedBlock,
+  getBlockTime,
 } from '@components/block/block.service';
 // import { IBlock } from '@components/block/block.interface';
 
@@ -50,8 +51,9 @@ const readBlockByHash = async (req: Request, res: Response) => {
 const getLatestBlockList = async (req: Request, res: Response) => {
   // const blocks: IBlock[] = await getLatestList();
   const output = await getLatestList();
+  const blockTime = await getBlockTime();
   res.status(httpStatus.OK);
-  res.send({ message: 'Read latest block list', output });
+  res.send({ message: 'Read latest block list', output, blockTime });
 };
 
 const readBlockWithSkip = async (req: Request, res: Response) => {
