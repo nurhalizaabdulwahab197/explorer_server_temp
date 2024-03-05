@@ -24,8 +24,9 @@ jobs:
           npm install
           npm run build --if-present
 
-      - name: Zip dist directory for deployment
-        run: zip -r release.zip dist/*
+      - name: Zip dist directory and package.json for deployment
+        run: |
+          zip -r release.zip dist package.json package-lock.json # include any other files or directories necessary
 
       - name: Upload dist artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -46,16 +47,16 @@ jobs:
         with:
           name: node-app
 
-      - name: Unzip dist artifact for deployment
+      - name: Unzip dist artifact for deployment and show contents
         run: |
-          unzip release.zip
-          ls -l # List files to verify the content
-
+          unzip release.zip -d ./deployment/
+          ls -l ./deployment/
+      
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'IntanExplorer'
           slot-name: 'production'  # Use lowercase here
-          package: .
+          package: ./deployment/  # Deploy the folder where we unzipped the content
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DA4C36A4C9A24A45B69EC510300651B1 }}
