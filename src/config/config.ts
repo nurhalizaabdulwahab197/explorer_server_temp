@@ -11,9 +11,7 @@ require('dotenv').config({ path: '.env.local' });
 // Do not use process.env object outside of this file.
 const envsSchema = Joi.object()
   .keys({
-    NODE_ENV: Joi.string()
-      .valid('production', 'integration', 'development')
-      .required(),
+    NODE_ENV: Joi.string().valid('production', 'integration', 'development').required(),
     PORT: Joi.number().default(8080),
     API_KEY_TOKEN: Joi.string().required(),
     MONGODB_URL: Joi.string().required(),
@@ -29,7 +27,8 @@ const { value: envVars, error } = envsSchema
 if (error) {
   throw new Error(
     `Config validation error: ${error.message}. \n
-     This app requires env variables to work properly. If you run app locally use docker-compose`,
+      ${envVars.NODE_ENV}
+     This app requires env variables to work properly. If you run app locally use docker-compose`
   );
 }
 
