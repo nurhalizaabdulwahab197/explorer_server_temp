@@ -48,9 +48,8 @@ jobs:
 
       - name: Unzip dist artifact for deployment
         run: |
-          mkdir ./deployment
-          unzip release.zip -d ./deployment
-          ls -l ./deployment # List files to verify the content
+          unzip release.zip
+          ls -l # List files to verify the content
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -58,5 +57,5 @@ jobs:
         with:
           app-name: 'IntanExplorer'
           slot-name: 'production'  # Use lowercase here
-          package: ./deployment
+          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DA4C36A4C9A24A45B69EC510300651B1 }}
