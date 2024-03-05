@@ -1,7 +1,7 @@
 import express, { Application } from 'express';
-
 import api from 'api';
 import lusca from 'lusca';
+import cors from 'cors';
 import httpContext from 'express-http-context';
 import expressMongoSanitize from 'express-mongo-sanitize';
 import consts from '@config/consts';
@@ -11,13 +11,18 @@ import uniqueReqId from '@core/middlewares/uniqueReqId.middleware';
 import http404 from '@components/404/404.router';
 import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
+
 import blockchainService from './services/blockchainService';
+import transactionService from './services/transactionService';
+import nodeService from './services/nodeService';
 
 db.connect();
 blockchainService.startPolling();
+transactionService.startPolling();
+nodeService.startPolling();
 
 const app: Application = express();
-
+app.use(cors());
 app.use(lusca.xssProtection(true));
 app.use(expressMongoSanitize());
 app.use(httpContext.middleware);

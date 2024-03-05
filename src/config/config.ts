@@ -27,7 +27,6 @@ const { value: envVars, error } = envsSchema
 if (error) {
   throw new Error(
     `Config validation error: ${error.message}. \n
-      ${envVars.NODE_ENV}
      This app requires env variables to work properly. If you run app locally use docker-compose`
   );
 }

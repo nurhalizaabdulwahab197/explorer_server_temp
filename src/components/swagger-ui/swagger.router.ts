@@ -3,10 +3,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import consts from '@config/consts';
 import config from '@config/config';
-import {
-  swaggerForbidden,
-  swaggerBasePath,
-} from '@core/middlewares/swagger.middleware';
+import { swaggerForbidden, swaggerBasePath } from '@core/middlewares/swagger.middleware';
 
 const router: Router = Router();
 
