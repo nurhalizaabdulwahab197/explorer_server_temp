@@ -5,9 +5,9 @@ import logger from '@core/utils/logger';
 import errorHandler from 'core/utils/errorHandler';
 
 const { port } = config;
-
-const server: Server = app.listen(port, (): void => {
-  logger.info(`Aapplication listens on PORT: ${port}`);
+const PORT = process.env.PORT || port;
+const server: Server = app.listen(PORT, (): void => {
+  logger.info(`Aapplication listens on PORT: ${PORT}`);
 });
 
 const exitHandler = (): void => {
