@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc && tsc-alias",
-    "server:prod": "node dist/server.js",
+    "start": "node dist/server.js",
     "server:dev": "ts-node-dev --inspect=0.0.0.0:9229 --exit-child --respawn -r tsconfig-paths/register src/server.ts",
     "test": "jest -c jest.config.js --env=node",
     "test:cov": "jest -c jest.config.js --coverage --env=node",
