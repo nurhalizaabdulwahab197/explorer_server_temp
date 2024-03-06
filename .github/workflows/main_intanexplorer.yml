@@ -34,7 +34,7 @@ jobs:
           fi
       - name: Zip the application for deployment
         run: |
-          zip -r release.zip dist node_modules package.json package-lock.json
+          zip -r release.zip dist package.json package-lock.json
 
       - name: Upload dist artifact for deployment job
         uses: actions/upload-artifact@v3
