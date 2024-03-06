@@ -24,6 +24,14 @@ jobs:
           npm install --omit=dev
           npm run build
 
+      - name: Verify cors installation
+        run: |
+          if [ -d "node_modules/cors" ]; then
+            echo "CORS module is installed."
+          else
+            echo "CORS module is NOT installed."
+            exit 1
+          fi
       - name: Zip the application for deployment
         run: |
           zip -r release.zip dist node_modules package.json package-lock.json
