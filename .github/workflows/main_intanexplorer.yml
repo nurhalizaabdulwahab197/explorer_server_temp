@@ -19,14 +19,15 @@ jobs:
           node-version: '18.x'
           cache: 'npm'
 
-      - name: npm install, build
+      - name: npm install and build
         run: |
-          npm install
-          npm run build --if-present
+          npm install --production
+          npm run build
+      
+      - name: Zip the application for deployment
+        run: |
+          zip -r release.zip dist node_modules package.json package-lock.json
 
-      - name: Zip dist directory and package.json for deployment
-        run: |
-          zip -r release.zip dist package.json package-lock.json # include any other files or directories necessary
 
       - name: Upload dist artifact for deployment job
         uses: actions/upload-artifact@v3
