@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc && tsc-alias",
-    "server:prod": "node dist/server.js", 
+    "server:prod": "node dist/server.js",
     "start": "node dist/server.js",
     "server:dev": "ts-node-dev --inspect=0.0.0.0:9229 --exit-child --respawn -r tsconfig-paths/register src/server.ts",
     "test": "jest -c jest.config.js --env=node",
@@ -61,6 +61,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^4.6.3",
     "ts-jest": "^27.1.1",
+    "tslib": "^2.6.2",
     "typescript": "^4.5.2",
     "uuid": "^9.0.0",
     "web3": "^4.5.0",
