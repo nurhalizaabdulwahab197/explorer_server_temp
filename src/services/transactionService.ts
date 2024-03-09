@@ -42,7 +42,6 @@ class TransactionService {
             amount: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
             receiverAddress: tx.to || 'null',
             contractAddress: transaction.contractAddress || 'null',
-            input: tx.input,
             status: transaction.status,
             value: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
             gasPrice: Number(this.web3.utils.fromWei(tx.gasPrice.toString(), 'gwei')),

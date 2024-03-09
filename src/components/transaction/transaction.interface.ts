@@ -7,7 +7,6 @@ export interface ITransaction {
   amount: number;
   receiverAddress: string;
   contractAddress: string;
-  input: string;
   status: string;
   value: number;
   gasPrice: number;
