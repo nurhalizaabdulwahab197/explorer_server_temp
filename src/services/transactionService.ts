@@ -28,20 +28,26 @@ class TransactionService {
         return;
       }
 
+      console.log(latestBlock);
       // Process transactions in the latest block
       // eslint-disable-next-line consistent-return
       const transactionPromises = latestBlock.transactions.map(async (tx) => {
         if (typeof tx !== 'string') {
+          const transaction = await this.web3.eth.getTransactionReceipt(tx.hash);
+          console.log(transaction);
           const transactionData = {
             hash: tx.hash,
             block: Number(latestBlock.number),
             senderAddress: tx.from,
             amount: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
-            receiverAddress: tx.to,
+            receiverAddress: tx.to || 'null',
+            contractAddress: transaction.contractAddress || 'null',
+            input: tx.input,
+            status: transaction.status,
             value: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
             gasPrice: Number(this.web3.utils.fromWei(tx.gasPrice.toString(), 'gwei')),
             gasLimit: Number(tx.gas),
-            gasUsed: Number(latestBlock.gasUsed) / Number(latestBlock.transactions.length),
+            gasUsed: Number(transaction.gasUsed),
             gasFees: Number(this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')),
             timestamp: new Date(Number(latestBlock.timestamp) * 1000),
             transactionFee: Number(
