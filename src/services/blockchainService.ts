@@ -125,45 +125,6 @@ class BlockchainService {
     }
   }
 
-  async fetchLatestBlock() {
-    try {
-      const blockData = await this.web3.eth.getBlock('latest');
-
-      const block: IBlock = {
-        number: Number(blockData.number),
-        hash: blockData.hash,
-        parentHash: blockData.parentHash,
-        nonce: Number(blockData.nonce),
-        sha3Uncles: blockData.sha3Uncles,
-        transactions: blockData.transactions?.map((tx) => (typeof tx === 'string' ? tx : tx.hash)),
-        miner: blockData.miner,
-        difficulty: Number(blockData.difficulty),
-        totalDifficulty: Number(blockData.totalDifficulty),
-        size: Number(blockData.size),
-        extraData: blockData.extraData,
-        gasLimit: Number(blockData.gasLimit),
-        gasUsed: Number(blockData.gasUsed),
-        timestamp: new Date(Number(blockData.timestamp) * 1000),
-        transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
-        transactionFee: Number(await this.calculateTransactionFees(Number(blockData.number))),
-        blockReward: Number(await this.calculateTransactionFees(Number(blockData.number))) + 0,
-        internalTransaction: Number(
-          await this.traceBlockInternalTransactions(Number(blockData.number))
-        ),
-        // ... (other properties)
-      };
-
-      block.transactionFee = await this.calculateTransactionFees(Number(blockData.number));
-
-      // Save the block using the block service
-      // await saveBlock(block);
-      logger.info(`Block number ${block.number} saved to the database.`);
-    } catch (error) {
-      logger.error('Error fetching the latest block:', error);
-      // Implement retry logic or error handling as needed
-    }
-  }
-
   async syncBlock(blockNumber: number, latestBlockNumber: number) {
     if (blockNumber > latestBlockNumber) {
       logger.info(`Synced up to block number: ${latestBlockNumber}`);

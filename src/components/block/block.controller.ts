@@ -27,8 +27,6 @@ const readBlockPage = async (req: Request, res: Response) => {
 
 const readBlock = async (req: Request, res: Response) => {
   const blockNumber: number = parseInt(req.params.number, 10);
-  //   res.status(httpStatus.OK);
-  //   res.send({ message: 'Read', output: await read(blockNumber) });
   if (Number.isNaN(blockNumber)) {
     return res.status(httpStatus.BAD_REQUEST).json({ error: 'Invalid block number' });
   }
@@ -74,18 +72,6 @@ const getLastSyncedBlocks = async (req: Request, res: Response) => {
 //   await setLastSyncedBlock(lastSyncedBlock);
 //   res.status(httpStatus.OK);
 //   res.send({ message: 'LastSyncBlock set' });
-// };
-// const updateBlock = async (req: Request, res: Response) => {
-//   const block = req.body as IBlock;
-//   await update(block);
-//   res.status(httpStatus.OK);
-//   res.send({ message: 'Updated' });
-// };
-
-// const deleteBlock = async (req: Request, res: Response) => {
-//   await deleteById(req.params.email);
-//   res.status(httpStatus.ACCEPTED);
-//   res.send({ message: 'Removed' });
 // };
 
 export {
