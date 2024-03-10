@@ -3,7 +3,6 @@ import config from '@config/config';
 import logger from '@core/utils/logger';
 import { ITransaction } from '@components/transaction/transaction.interface';
 import { TransactionModel } from '@components/transaction/transaction.model';
-import { timeStamp } from 'console';
 
 const retrieveTransactionLists = async (address: string): Promise<ITransaction[]> => {
   try {

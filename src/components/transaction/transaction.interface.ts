@@ -8,6 +8,7 @@ export interface ITransaction {
   receiverAddress: string;
   contractAddress: string;
   status: string;
+  input: string;
   value: number;
   gasPrice: number;
   transactionFee: number;

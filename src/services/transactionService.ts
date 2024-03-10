@@ -34,7 +34,9 @@ class TransactionService {
       const transactionPromises = latestBlock.transactions.map(async (tx) => {
         if (typeof tx !== 'string') {
           const transaction = await this.web3.eth.getTransactionReceipt(tx.hash);
-          console.log(transaction);
+          if (!transaction) {
+            logger.info('No transactions receipt found');
+          }
           const transactionData = {
             hash: tx.hash,
             block: Number(latestBlock.number),
@@ -43,6 +45,7 @@ class TransactionService {
             receiverAddress: tx.to || 'null',
             contractAddress: transaction.contractAddress || 'null',
             status: transaction.status,
+            input: tx.input || '0x',
             value: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
             gasPrice: Number(this.web3.utils.fromWei(tx.gasPrice.toString(), 'gwei')),
             gasLimit: Number(tx.gas),
@@ -66,6 +69,8 @@ class TransactionService {
               )
             ),
           };
+
+          console.log(transaction.status, tx.input);
           logger.info(`Transactions saved: ${tx.hash}`);
           return TransactionModel.create(transactionData);
         }

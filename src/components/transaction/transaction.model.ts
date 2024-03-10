@@ -13,6 +13,7 @@ const transactionSchema = new mongoose.Schema<ITransaction>(
     receiverAddress: { type: String, required: true },
     contractAddress: { type: String, required: true },
     status: { type: String, required: true },
+    input: { type: String, required: true },
     value: { type: Number, required: true },
     gasPrice: { type: Number, required: true },
     transactionFee: { type: Number, required: true },
