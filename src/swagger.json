@@ -31,6 +31,233 @@
         }
       }
     },
+    "/api/account/accountOverview/{address}": {
+      "get": {
+        "tags": ["account"],
+        "summary": "Read account",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Account address"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/block/number/{number}": {
+      "get": {
+        "tags": ["read block"],
+        "summary": "Read block",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Block Number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "block",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/block/hash/{hash}": {
+      "get": {
+        "tags": ["read block"],
+        "summary": "Read block",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Block hash"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "block",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/block/blockList/{pageNumber}": {
+      "get": {
+        "tags": ["read block"],
+        "summary": "Read block list by page",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"  
+            },
+            "description": "Page number for block list"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseWithMessage"  
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block list not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/block/latestBlockList": {
+      "get": {
+        "tags": ["read block"],
+        "summary": "Read blocks",
+        "responses": {
+          "200": {
+            "description": "block",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/block/getLastSyncBlock": {
+      "get": {
+        "tags": ["read block"],
+        "summary": "Read last sync blocks",
+        "responses": {
+          "200": {
+            "description": "block",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Block not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/user/{id}": {
+      "get": {
+        "tags": ["read user"],
+        "summary": "Read user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/user": {
       "post": {
         "tags": ["create user"],
@@ -82,7 +309,7 @@
       }
     },
     "/api/transaction": {
-      "post": {
+      "get": {
         "tags": ["retrieve transactions"],
         "description": "Retrieve all transactions",
         "responses": {
@@ -96,7 +323,36 @@
                     "transactions": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/TransactionInput"
+                        "$ref": "#/components/schemas/ResponseWithMessage"  
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/latest": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve the count of transactions",
+        "responses": {
+          "200": {
+            "description": "Transactions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ResponseWithMessage"  
                       }
                     }
                   }
@@ -131,7 +387,164 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransactionInput"
+                  "$ref": "#/components/schemas/ResponseWithMessage"  
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/transactionlist/{pageNumber}": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "summary": "Read transaction list by page",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"  
+            },
+            "description": "Page number for transaction list"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "transaction list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseWithMessage"  
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "transaction list not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/fetch/latestTransactionList": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "summary": "Read latest transaction",
+        "responses": {
+          "200": {
+            "description": "Transaction retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/next/{hashId}": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve a transaction by hash",
+        "parameters": [
+          {
+            "name": "hashId",
+            "in": "path",
+            "description": "The hashId of the transaction to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"  
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/prev/{hashId}": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve a transaction by hash",
+        "parameters": [
+          {
+            "name": "hashId",
+            "in": "path",
+            "description": "The hashId of the transaction to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/transaction/latestThirtyDay/transactionNumber": {
+      "get": {
+        "tags": ["retrieve transactions"],
+        "description": "Retrieve latestThirtyDayTransactionNumber",
+        "responses": {
+          "200": {
+            "description": "Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
                 }
               }
             }
@@ -193,49 +606,6 @@
             "default": "john.d@example.net"
           }
         }
-      },
-      "TransactionInput": {
-        "type": "object",
-        "properties": {
-          "hash": {
-            "type": "string"
-          },
-          "block": {
-            "type": "integer"
-          },
-          "senderAddress": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "number"
-          },
-          "receiverAddress": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number"
-          },
-          "gasPrice": {
-            "type": "number"
-          },
-          "transactionFee": {
-            "type": "number"
-          },
-          "gasLimit": {
-            "type": "number"
-          },
-          "gasUsed": {
-            "type": "number"
-          },
-          "gasFees": {
-            "type": "number"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": ["hash", "block", "senderAddress", "amount", "receiverAddress", "value", "gasPrice", "transactionFee", "gasLimit", "gasUsed", "gasFees", "timestamp"]
       },
       "ResponseWithMessage": {
         "type": "object",

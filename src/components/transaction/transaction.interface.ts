@@ -6,6 +6,9 @@ export interface ITransaction {
   senderAddress: string;
   amount: number;
   receiverAddress: string;
+  contractAddress: string;
+  status: string;
+  input: string;
   value: number;
   gasPrice: number;
   transactionFee: number;
@@ -13,5 +16,8 @@ export interface ITransaction {
   gasUsed: number;
   gasFees: number;
   timestamp: Date;
+  maxFeePerGas: number;
+  maxPriorityFeePerGas: number;
+  baseFeePerGas: number;
   // ... any other properties you want to include
 }

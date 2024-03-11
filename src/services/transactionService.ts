@@ -28,32 +28,55 @@ class TransactionService {
         return;
       }
 
+      console.log(latestBlock);
       // Process transactions in the latest block
-      // eslint-disable-next-line no-restricted-syntax
-      for (const tx of latestBlock.transactions) {
+      // eslint-disable-next-line consistent-return
+      const transactionPromises = latestBlock.transactions.map(async (tx) => {
         if (typeof tx !== 'string') {
+          const transaction = await this.web3.eth.getTransactionReceipt(tx.hash);
+          if (!transaction) {
+            logger.info('No transactions receipt found');
+          }
           const transactionData = {
             hash: tx.hash,
             block: Number(latestBlock.number),
             senderAddress: tx.from,
             amount: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
-            receiverAddress: tx.to,
+            receiverAddress: tx.to || 'null',
+            contractAddress: transaction.contractAddress || 'null',
+            status: transaction.status,
+            input: tx.input || '0x',
             value: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
             gasPrice: Number(this.web3.utils.fromWei(tx.gasPrice.toString(), 'gwei')),
-            gasLimit: Number(tx.gasLimit) || 0, // Ensure gasLimit is a number, defaulting to 0 if undefined
-            gasUsed: Number(tx.gas),
+            gasLimit: Number(tx.gas),
+            gasUsed: Number(transaction.gasUsed),
             gasFees: Number(this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')),
             timestamp: new Date(Number(latestBlock.timestamp) * 1000),
             transactionFee: Number(
               this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')
-            ), // Provide a default value for transactionFee
-            // Add other relevant transaction data here
+            ),
+            maxFeePerGas: Number(
+              this.web3.utils.fromWei(Number(Number(tx.gasPrice) * 1.2).toString(), 'gwei')
+            ),
+            maxPriorityFeePerGas: Number(
+              this.web3.utils.fromWei(Number(Number(tx.gasPrice) * 0.2).toString(), 'gwei')
+            ),
+            baseFeePerGas: Number(
+              this.web3.utils.fromWei(
+                latestBlock.baseFeePerGas?.toString() ||
+                  Number(Number(tx.gasPrice) * 1.2 - Number(tx.gasPrice) * 0.2).toString(),
+                'gwei'
+              )
+            ),
           };
-          // eslint-disable-next-line no-await-in-loop
-          await TransactionModel.create(transactionData);
-          logger.info(`Transaction saved: ${tx.hash}`);
+
+          console.log(transaction.status, tx.input);
+          logger.info(`Transactions saved: ${tx.hash}`);
+          return TransactionModel.create(transactionData);
         }
-      }
+      });
+
+      await Promise.all(transactionPromises);
     } catch (error) {
       logger.error('Error detecting and saving transactions:', error);
     }
