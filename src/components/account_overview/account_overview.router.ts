@@ -7,4 +7,6 @@ const router: Router = Router();
 
 router.get('/account/accountOverview/:address', getAccountOverview);
 
+router.get('/contract/contractOverview/:address', getAccountOverview);
+
 export default router;
