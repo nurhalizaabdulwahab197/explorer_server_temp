@@ -36,4 +36,21 @@ const retrieveBalanceETH = async (address: string): Promise<string> => {
   });
 };
 
-export { retrieveTransactionLists, retrieveBalanceETH };
+const checkAddressType = async (address: string): Promise<'account' | 'contract' | 'error'> => {
+  const web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
+
+  try {
+    const code = await web3.eth.getCode(address);
+    if (code === '0x') {
+      // It's an externally owned account address
+      return 'account';
+    }
+    // It's a contract address
+    return 'contract';
+  } catch (error) {
+    logger.error('Error determining address type:', error);
+    return 'error'; // Or throw error, depending on your error handling strategy
+  }
+};
+
+export { retrieveTransactionLists, retrieveBalanceETH, checkAddressType };
