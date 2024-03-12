@@ -8,7 +8,7 @@ const retrieveTransactionLists = async (address: string): Promise<ITransaction[]
   try {
     // Use the TransactionModel to find all transactions with the specified address as either sender or receiver
     const transactions: ITransaction[] = await TransactionModel.find({
-      $or: [{ senderAddress: address }, { receiverAddress: address }],
+      $or: [{ senderAddress: address }, { receiverAddress: address }, { contractAddress: address }],
     }).sort({ timestamp: -1 });
     return transactions;
   } catch (error) {
