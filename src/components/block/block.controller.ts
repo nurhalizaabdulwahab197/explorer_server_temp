@@ -9,14 +9,6 @@ import {
   getLastSyncedBlock,
   getBlockTime,
 } from '@components/block/block.service';
-// import { IBlock } from '@components/block/block.interface';
-
-// const createBlock = async (req: Request, res: Response) => {
-//   const block = req.body as IBlock;
-//   await create(block);
-//   res.status(httpStatus.CREATED);
-//   return res.send({ message: 'Created' });
-// };
 
 const readBlockPage = async (req: Request, res: Response) => {
   const pageNumber: number = parseInt(req.params.pageNumber, 10);
@@ -25,7 +17,14 @@ const readBlockPage = async (req: Request, res: Response) => {
   res.send({ message: 'Read latest block list', output });
 };
 
+const isNumeric = (str: string) => {
+  return /^\d+$/.test(str);
+};
+
 const readBlock = async (req: Request, res: Response) => {
+  if (!isNumeric(req.params.number)) {
+    return res.status(httpStatus.BAD_REQUEST).json({ error: 'Invalid block number' });
+  }
   const blockNumber: number = parseInt(req.params.number, 10);
   if (Number.isNaN(blockNumber)) {
     return res.status(httpStatus.BAD_REQUEST).json({ error: 'Invalid block number' });
@@ -66,13 +65,6 @@ const getLastSyncedBlocks = async (req: Request, res: Response) => {
   res.status(httpStatus.OK);
   res.send({ message: 'LastSyncBlock get', output });
 };
-
-// const setLastSyncedBlocks = async (req: Request, res: Response) => {
-//   const { lastSyncedBlock } = req.body;
-//   await setLastSyncedBlock(lastSyncedBlock);
-//   res.status(httpStatus.OK);
-//   res.send({ message: 'LastSyncBlock set' });
-// };
 
 export {
   readBlock,
