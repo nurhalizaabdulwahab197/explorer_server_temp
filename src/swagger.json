@@ -557,6 +557,38 @@
           }
         }
       }
+    },
+    "/api/account/accountOverview/{address}": {
+      "get": {
+        "tags":["retrieve account overview"],
+        "description": "Retrieve account overview for specific account",
+        "parameters":[
+          {
+            "name": "address",
+            "in":"path",
+            "description": "account address",
+            "required": "true", 
+            "schema":{
+              "type":"string"
+            }
+          }
+        ],
+        "responses":{
+          "200":{
+            "description": "Account Overview retrieved successfully",
+            "content":{
+              "application/json":{
+                "schema":{
+                  "$ref":"#/components/schemas/TransactionInput"
+                }
+              }
+            }
+          },
+          "500":{
+            "description":"Internal Server Error"
+          }
+        }
+      }
     }
   },
   "components": {
