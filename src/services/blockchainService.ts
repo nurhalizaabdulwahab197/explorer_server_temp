@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // blockchainService.ts
 import Web3 from 'web3';
 import config from '@config/config';
@@ -133,6 +134,29 @@ class BlockchainService {
 
     try {
       const blockData = await this.web3.eth.getBlock(blockNumber);
+
+      const blockMiner = await new Promise<string>((resolve) => {
+        (this.web3.currentProvider as any).send(
+          {
+            method: 'clique_getSigner',
+            params: [blockData.hash],
+            jsonrpc: '2.0',
+            id: new Date().getTime(),
+          },
+          (error: Error, response: { result: any }) => {
+            if (error) {
+              logger.error(error.message); // Log the error
+              resolve('0x29e7152d0456258fa4babb7a3f37b8a0347684eb'); // Use default value in case of error
+            } else {
+              resolve(response.result as string);
+            }
+          }
+        );
+      }).catch((error) => {
+        logger.error(error); // Log any error that might have occurred during the promise
+        return '0x29e7152d0456258fa4babb7a3f37b8a0347684eb'; // Return default value in case of error
+      });
+
       const block: IBlock = {
         number: Number(blockData.number),
         hash: blockData.hash,
@@ -140,7 +164,7 @@ class BlockchainService {
         nonce: Number(blockData.nonce),
         sha3Uncles: blockData.sha3Uncles,
         transactions: blockData.transactions?.map((tx) => (typeof tx === 'string' ? tx : tx.hash)),
-        miner: blockData.miner,
+        miner: blockMiner,
         difficulty: Number(blockData.difficulty),
         totalDifficulty: Number(blockData.totalDifficulty),
         size: Number(blockData.size),
@@ -162,7 +186,6 @@ class BlockchainService {
 
       // Process the next block
       await this.syncBlock(blockNumber + 1, latestBlockNumber);
-      return;
     } catch (error) {
       logger.error(`Error syncing block number ${blockNumber}:`, error);
       // Handle error, maybe retry current block or stop syncing
