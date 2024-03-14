@@ -5,10 +5,15 @@ import { TransactionModel } from '@components/transaction/transaction.model';
 import { checkAddressType } from '@components/account_overview/account_overview.service'; // This path might need adjustment
 import { ISearchResult } from './search.interface';
 
+const isNumeric = (str: string) => {
+  return /^\d+$/.test(str);
+};
+
 const search = async (query: string): Promise<ISearchResult> => {
   let result: ISearchResult = { type: '', data: null };
+  const numQuery = isNumeric(query) ? parseInt(query, 10) : '0';
   const blockQuery = {
-    $or: [{ number: parseInt(query, 10) }, { hash: query }],
+    $or: [{ number: numQuery }, { hash: query }],
   };
 
   try {
