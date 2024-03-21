@@ -15,7 +15,7 @@ class NodeService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 5000; // Poll every 5 seconds
+    this.pollingInterval = 10000; // Poll every 5 seconds
 
     // Populate nodeCache initially
     this.startPolling();

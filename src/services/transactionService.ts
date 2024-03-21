@@ -37,6 +37,10 @@ class TransactionService {
           if (!transaction) {
             logger.info('No transactions receipt found');
           }
+
+          const { baseFeePerGas } = latestBlock;
+          const priorityFeePerGas = tx.maxPriorityFeePerGas || tx.gasPrice - baseFeePerGas;
+
           const transactionData = {
             hash: tx.hash,
             block: Number(latestBlock.number),
@@ -47,27 +51,33 @@ class TransactionService {
             status: transaction.status,
             input: tx.input || '0x',
             value: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
-            gasPrice: Number(this.web3.utils.fromWei(tx.gasPrice.toString(), 'gwei')),
+            gasPrice: tx.gasPrice
+              ? Number(this.web3.utils.fromWei(tx.gasPrice.toString(), 'gwei'))
+              : 0,
             gasLimit: Number(tx.gas),
             gasUsed: Number(transaction.gasUsed),
             gasFees: Number(this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')),
             timestamp: new Date(Number(latestBlock.timestamp) * 1000),
-            transactionFee: Number(
-              this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')
-            ),
-            maxFeePerGas: Number(
-              this.web3.utils.fromWei(Number(Number(tx.gasPrice) * 1.2).toString(), 'gwei')
-            ),
-            maxPriorityFeePerGas: Number(
-              this.web3.utils.fromWei(Number(Number(tx.gasPrice) * 0.2).toString(), 'gwei')
-            ),
-            baseFeePerGas: Number(
-              this.web3.utils.fromWei(
-                latestBlock.baseFeePerGas?.toString() ||
-                  Number(Number(tx.gasPrice) * 1.2 - Number(tx.gasPrice) * 0.2).toString(),
-                'gwei'
-              )
-            ),
+            maxFeePerGas: tx.maxFeePerGas
+              ? Number(this.web3.utils.fromWei(tx.maxFeePerGas.toString(), 'gwei'))
+              : 0,
+            maxPriorityFeePerGas: priorityFeePerGas
+              ? Number(this.web3.utils.fromWei(priorityFeePerGas.toString(), 'gwei'))
+              : 0,
+            baseFeePerGas: baseFeePerGas
+              ? Number(this.web3.utils.fromWei(baseFeePerGas.toString(), 'gwei'))
+              : 0,
+            // Calculate the transaction fee based on EIP-1559
+            transactionFee: transaction.effectiveGasPrice
+              ? Number(
+                  this.web3.utils.fromWei(
+                    (
+                      Number(transaction.effectiveGasPrice) * Number(transaction.gasUsed)
+                    ).toString(),
+                    'ether'
+                  )
+                )
+              : 0,
           };
 
           console.log(transaction.status, tx.input);
