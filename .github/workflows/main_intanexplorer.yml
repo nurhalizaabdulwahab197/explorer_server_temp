@@ -21,20 +21,24 @@ jobs:
 
       - name: npm install and build
         run: |
-          npm install
-          npm run build # Ensure this command builds your app with webpack correctly
+          npm install --omit=dev
+          npm run build
 
-      # Only upload the build directory
-      - name: Upload build artifacts
+      - name: Zip the application for deployment
+        run: |
+          zip -r release.zip dist package.json package-lock.json
+
+      - name: Upload dist artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: node-app
-          path: ./dist # Replace with the correct path to your build output
+          path: release.zip
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: production
+      name: production # Use lowercase here
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -43,11 +47,16 @@ jobs:
         with:
           name: node-app
 
+      - name: Unzip dist artifact for deployment and show contents
+        run: |
+          unzip release.zip -d ./deployment/
+          ls -l ./deployment/
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'IntanExplorer'
-          slot-name: 'production'
-          package: . # Deploy the folder where we unzipped the content
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          slot-name: 'production' # Use lowercase here
+          package: ./deployment/ # Deploy the folder where we unzipped the content
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DA4C36A4C9A24A45B69EC510300651B1 }}
