@@ -27,10 +27,12 @@ const getLatestList = async (): Promise<ITransaction[]> => {
   return transactions;
 };
 
-const readTransactionByPage = async (transaction: number): Promise<ITransaction[]> => {
+const readTransactionByPage = async (pageNumber: number): Promise<ITransaction[]> => {
   try {
     const pageSize = 10;
-    const skipCount = (transaction - 1) * pageSize;
+    // Ensure the page number is at least 1
+    const effectivePageNumber = Math.max(pageNumber, 1);
+    const skipCount = (effectivePageNumber - 1) * pageSize;
     const pageBlock: ITransaction[] = await TransactionModel.find()
       .sort({ timestamp: -1 })
       .skip(skipCount)

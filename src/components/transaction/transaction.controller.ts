@@ -43,9 +43,18 @@ const getLatestTransactionList = async (req: Request, res: Response) => {
 
 const readByPage = async (req: Request, res: Response) => {
   const pageNumber: number = parseInt(req.params.pageNumber, 10);
-  const output = await readTransactionByPage(pageNumber);
-  res.status(httpStatus.OK);
-  res.send({ message: 'Read latest transaction list', output });
+
+  // Check if pageNumber is NaN or less than 1, set to 1 by default
+  // eslint-disable-next-line no-restricted-globals
+  const safePageNumber: number = isNaN(pageNumber) || pageNumber < 1 ? 1 : pageNumber;
+
+  try {
+    const output = await readTransactionByPage(safePageNumber);
+    res.status(httpStatus.OK).send({ message: 'Read latest transaction list', output });
+  } catch (error) {
+    console.error('Error while reading the transactions by page:', error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send({ message: 'Error reading transactions' });
+  }
 };
 
 // eslint-disable-next-line consistent-return
