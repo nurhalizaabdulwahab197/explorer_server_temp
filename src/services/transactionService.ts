@@ -2,6 +2,7 @@ import Web3 from 'web3';
 import config from '@config/config';
 import logger from '@core/utils/logger';
 import { TransactionModel } from '@components/transaction/transaction.model';
+import { getLastSyncedBlock } from '@components/block/block.service';
 
 class TransactionService {
   web3: Web3;
@@ -14,36 +15,40 @@ class TransactionService {
   }
 
   startPolling() {
-    setInterval(() => this.detectAndSaveTransactions(), this.pollingInterval);
+    setInterval(() => this.syncTransactions(), this.pollingInterval);
   }
 
-  async detectAndSaveTransactions() {
+  async detectAndSaveTransactions(blockNumber: number, latestBlockNumber: number) {
+    if (blockNumber > latestBlockNumber) {
+      logger.info(`Synced transaction up to block number: ${latestBlockNumber}`);
+      return;
+    }
     try {
       // Fetch latest block
-      const latestBlockNumber = await this.web3.eth.getBlockNumber();
-      const latestBlock = await this.web3.eth.getBlock(latestBlockNumber, true);
+      const blockData = await this.web3.eth.getBlock(blockNumber, true);
 
-      if (!latestBlock || !latestBlock.transactions) {
-        logger.info('No transactions found in the latest block.');
+      if (!blockData || !blockData.transactions) {
+        logger.info(`No transactions found in the block number: ${blockNumber}.`);
+        await this.detectAndSaveTransactions(blockNumber + 1, latestBlockNumber);
         return;
       }
 
-      console.log(latestBlock);
+      console.log(blockData);
       // Process transactions in the latest block
       // eslint-disable-next-line consistent-return
-      const transactionPromises = latestBlock.transactions.map(async (tx) => {
+      const transactionPromises = blockData.transactions.map(async (tx) => {
         if (typeof tx !== 'string') {
           const transaction = await this.web3.eth.getTransactionReceipt(tx.hash);
           if (!transaction) {
             logger.info('No transactions receipt found');
           }
 
-          const { baseFeePerGas } = latestBlock;
+          const { baseFeePerGas } = blockData;
           const priorityFeePerGas = tx.maxPriorityFeePerGas || tx.gasPrice - baseFeePerGas;
 
           const transactionData = {
             hash: tx.hash,
-            block: Number(latestBlock.number),
+            block: Number(blockData.number),
             senderAddress: tx.from,
             amount: Number(this.web3.utils.fromWei(tx.value.toString(), 'ether')),
             receiverAddress: tx.to || 'null',
@@ -57,7 +62,7 @@ class TransactionService {
             gasLimit: Number(tx.gas),
             gasUsed: Number(transaction.gasUsed),
             gasFees: Number(this.web3.utils.fromWei((tx.gasPrice * tx.gas).toString(), 'ether')),
-            timestamp: new Date(Number(latestBlock.timestamp) * 1000),
+            timestamp: new Date(Number(blockData.timestamp) * 1000),
             maxFeePerGas: tx.maxFeePerGas
               ? Number(this.web3.utils.fromWei(tx.maxFeePerGas.toString(), 'gwei'))
               : 0,
@@ -82,13 +87,24 @@ class TransactionService {
 
           console.log(transaction.status, tx.input);
           logger.info(`Transactions saved: ${tx.hash}`);
-          return TransactionModel.create(transactionData);
+          await TransactionModel.create(transactionData);
+          await this.detectAndSaveTransactions(blockNumber + 1, latestBlockNumber);
         }
       });
 
       await Promise.all(transactionPromises);
     } catch (error) {
       logger.error('Error detecting and saving transactions:', error);
+    }
+  }
+
+  async syncTransactions() {
+    try {
+      const lastSyncedBlockNumber = await getLastSyncedBlock();
+      const latestBlockNumber = await this.web3.eth.getBlockNumber();
+      await this.detectAndSaveTransactions(lastSyncedBlockNumber + 1, Number(latestBlockNumber));
+    } catch (error) {
+      logger.error('Error initiating transaction sync:', error);
     }
   }
 }
