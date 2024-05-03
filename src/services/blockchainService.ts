@@ -158,8 +158,8 @@ class BlockchainService {
         return '0x29e7152d0456258fa4babb7a3f37b8a0347684eb'; // Return default value in case of error
       });
 
-      const internalTransactionCount = Number(
-        await this.traceBlockInternalTransactions(Number(blockData.number))
+      const transactionNumber = Number(
+        await this.web3.eth.getBlockTransactionCount(blockData.number)
       );
       const block: IBlock = {
         number: Number(blockData.number),
@@ -176,15 +176,17 @@ class BlockchainService {
         gasLimit: Number(blockData.gasLimit),
         gasUsed: Number(blockData.gasUsed),
         timestamp: new Date(Number(blockData.timestamp) * 1000),
-        transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
+        transactionNumber,
         transactionFee: Number(await this.calculateTransactionFees(Number(blockData.number))),
         blockReward: Number(await this.calculateTransactionFees(Number(blockData.number))) + 0,
-        internalTransaction: internalTransactionCount,
+        internalTransaction: Number(
+          await this.traceBlockInternalTransactions(Number(blockData.number))
+        ),
         // ... (other properties)
       };
 
-      if (internalTransactionCount > 0) {
-        logger.info(`Block ${block.number} has ${internalTransactionCount} internal transactions`);
+      if (transactionNumber > 0) {
+        logger.info(`Block ${block.number} has ${transactionNumber} internal transactions`);
         transactionService.detectAndSaveTransactions(block.number);
       }
 
