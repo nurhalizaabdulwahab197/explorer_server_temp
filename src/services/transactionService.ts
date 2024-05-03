@@ -10,17 +10,13 @@ class TransactionService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 30000; // Poll every 30 seconds
   }
 
-  startPolling() {
-    setInterval(() => this.detectAndSaveTransactions(), this.pollingInterval);
-  }
-
-  async detectAndSaveTransactions() {
+  async detectAndSaveTransactions(latestBlockNumber?: number) {
     try {
       // Fetch latest block
-      const latestBlockNumber = await this.web3.eth.getBlockNumber();
+      // eslint-disable-next-line no-param-reassign
+      if (!latestBlockNumber) latestBlockNumber = Number(await this.web3.eth.getBlockNumber());
       const latestBlock = await this.web3.eth.getBlock(latestBlockNumber, true);
 
       if (!latestBlock || !latestBlock.transactions) {
