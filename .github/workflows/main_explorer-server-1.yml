@@ -40,6 +40,8 @@ jobs:
     environment:
       name: production # Use lowercase here
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download dist artifact from build job
