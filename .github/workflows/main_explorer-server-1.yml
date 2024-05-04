@@ -40,12 +40,16 @@ jobs:
     environment:
       name: production # Use lowercase here
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+        
     steps:
       - name: Download dist artifact from build job
         uses: actions/download-artifact@v3
         with:
           name: node-app
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1685DC4F543D4CDB8589FCAFE63E9E28 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_21D8356B1813483AB29F934F95396A35 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D6D5CC5848684800B468B7D57794E80C }} 
+          enable-AzPSSession: true
 
       - name: Unzip dist artifact for deployment and show contents
         run: |
@@ -59,6 +63,3 @@ jobs:
           app-name: 'explorer-server-1'
           slot-name: 'production' # Use lowercase here
           package: ./deployment/ # Deploy the folder where we unzipped the content
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1685DC4F543D4CDB8589FCAFE63E9E28 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_21D8356B1813483AB29F934F95396A35 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D6D5CC5848684800B468B7D57794E80C }}
