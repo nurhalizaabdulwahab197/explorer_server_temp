@@ -11,7 +11,7 @@ class TransactionService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 30000; // Poll every 30 seconds
+    this.pollingInterval = 10000; // Poll every 30 seconds
   }
 
   startPolling() {
@@ -28,12 +28,10 @@ class TransactionService {
       const blockData = await this.web3.eth.getBlock(blockNumber, true);
 
       if (!blockData || !blockData.transactions) {
-        logger.info(`No transactions found in the block number: ${blockNumber}.`);
+        // logger.info(`No transactions found in the block number: ${blockNumber}.`);
         await this.detectAndSaveTransactions(blockNumber + 1, latestBlockNumber);
         return;
       }
-
-      console.log(blockData);
       // Process transactions in the latest block
       // eslint-disable-next-line consistent-return
       const transactionPromises = blockData.transactions.map(async (tx) => {
@@ -42,9 +40,9 @@ class TransactionService {
           if (!transaction) {
             logger.info('No transactions receipt found');
           }
-
           const { baseFeePerGas } = blockData;
-          const priorityFeePerGas = tx.maxPriorityFeePerGas || tx.gasPrice - baseFeePerGas;
+          const priorityFeePerGas =
+            Number(tx.maxPriorityFeePerGas) || Number(tx.gasPrice) - Number(baseFeePerGas);
 
           const transactionData = {
             hash: tx.hash,
@@ -85,8 +83,9 @@ class TransactionService {
               : 0,
           };
 
-          console.log(transaction.status, tx.input);
+          // console.log(transaction.status, tx.input);
           logger.info(`Transactions saved: ${tx.hash}`);
+          console.log(transactionData);
           await TransactionModel.create(transactionData);
           await this.detectAndSaveTransactions(blockNumber + 1, latestBlockNumber);
         }
