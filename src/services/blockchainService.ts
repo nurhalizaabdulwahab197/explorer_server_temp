@@ -18,7 +18,7 @@ class BlockchainService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 30000;
+    this.pollingInterval = 10000;
   }
 
   startPolling() {
