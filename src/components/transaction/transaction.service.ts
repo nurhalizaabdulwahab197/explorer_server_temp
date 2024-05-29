@@ -76,14 +76,17 @@ const formatDate = (date: Date): string => {
 const getThirtyDayTransactionNumber = async (): Promise<
   { date: string; transactionCount: number }[]
 > => {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29); // Set to 30 days ago including today
 
-  // Generate an array of dates for the last 30 days
+  // Generate an array of dates for the last 30 days including today
   const dates = [];
-  for (let i = 0; i < 30; i += 1) {
+  for (let i = 0; i <= 30; i++) {
     const date = new Date(thirtyDaysAgo);
     date.setDate(date.getDate() + i);
+    if (date > today) break; // Stop adding dates if we surpass today
     dates.push(formatDate(date)); // Format date here and push into the array
   }
 
@@ -91,13 +94,13 @@ const getThirtyDayTransactionNumber = async (): Promise<
     const result = await TransactionModel.aggregate([
       {
         $match: {
-          timestamp: { $gte: thirtyDaysAgo }, // Filter transactions from the last 30 days
+          timestamp: { $gte: thirtyDaysAgo, $lte: today }, // Ensure the filter covers up to today
         },
       },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } }, // Group transactions by date
-          transactionCount: { $sum: 1 }, // Count the number of transactions for each date
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+          transactionCount: { $sum: 1 },
         },
       },
       {
@@ -112,20 +115,18 @@ const getThirtyDayTransactionNumber = async (): Promise<
       },
     ]);
 
-    // Create a map from the result for quick access
+    // Map and finalize results
     const resultMap = new Map(result.map((item) => [item.date, item.transactionCount]));
-
-    // Populate the result array with transaction counts for all dates
     const finalResult = dates.map((date) => ({
       date,
-      transactionCount: resultMap.get(date) || 0, // Use logical OR to handle missing counts
+      transactionCount: resultMap.get(date) || 0,
     }));
 
-    logger.debug('Successfully retrieved transaction count for the last 30 days');
+    logger.debug('Successfully retrieved transaction count for the last 30 days including today');
     return finalResult;
   } catch (error) {
     logger.error('Error finding transaction count by date:', error);
-    throw error; // Re-throw the error to propagate it to the caller
+    throw error;
   }
 };
 
