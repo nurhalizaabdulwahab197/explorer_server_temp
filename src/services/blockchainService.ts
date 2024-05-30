@@ -9,6 +9,7 @@ import {
   getLastSyncedBlock,
 } from '@components/block/block.service';
 import { IBlock } from '@components/block/block.interface';
+import transactionService from './transactionService';
 
 class BlockchainService {
   web3: Web3;
@@ -102,7 +103,7 @@ class BlockchainService {
           const gasPrice = Number(tx.gasPrice);
           const gas = Number(tx.gas);
 
-          if (isNaN(gasPrice) || isNaN(gas)) {
+          if (Number.isNaN(gasPrice) || Number.isNaN(gas)) {
             console.error(`Invalid gasPrice or gas for hash ${txHash}`);
             return 0;
           }
@@ -157,6 +158,9 @@ class BlockchainService {
         return '0x29e7152d0456258fa4babb7a3f37b8a0347684eb'; // Return default value in case of error
       });
 
+      const transactionNumber = Number(
+        await this.web3.eth.getBlockTransactionCount(blockData.number)
+      );
       const block: IBlock = {
         number: Number(blockData.number),
         hash: blockData.hash,
@@ -172,7 +176,7 @@ class BlockchainService {
         gasLimit: Number(blockData.gasLimit),
         gasUsed: Number(blockData.gasUsed),
         timestamp: new Date(Number(blockData.timestamp) * 1000),
-        transactionNumber: Number(await this.web3.eth.getBlockTransactionCount(blockData.number)),
+        transactionNumber,
         transactionFee: Number(await this.calculateTransactionFees(Number(blockData.number))),
         blockReward: Number(await this.calculateTransactionFees(Number(blockData.number))) + 0,
         internalTransaction: Number(
@@ -180,6 +184,11 @@ class BlockchainService {
         ),
         // ... (other properties)
       };
+
+      if (transactionNumber > 0) {
+        logger.info(`Block ${block.number} has ${transactionNumber} internal transactions`);
+        transactionService.detectAndSaveTransactions(block.number);
+      }
 
       await saveBlock(block);
       await setLastSyncedBlock(blockNumber);
