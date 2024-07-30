@@ -13,12 +13,10 @@ import swaggerApiDocs from '@components/swagger-ui/swagger.router';
 import db from '@db';
 
 import blockchainService from './services/blockchainService';
-import transactionService from './services/transactionService';
 import nodeService from './services/nodeService';
 
 db.connect();
 blockchainService.startPolling();
-transactionService.startPolling();
 nodeService.startPolling();
 
 const app: Application = express();
