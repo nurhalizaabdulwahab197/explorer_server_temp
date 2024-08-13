@@ -24,6 +24,8 @@ const transactionSchema = new mongoose.Schema<ITransaction>(
     maxFeePerGas: { type: Number, required: true },
     maxPriorityFeePerGas: { type: Number, required: true },
     baseFeePerGas: { type: Number, required: true },
+    note: { type: String, required: false },
+    onComplete: { type: String, required: false },
     // ... any other properties you want to include
   },
   { timestamps: true }

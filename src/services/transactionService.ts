@@ -2,7 +2,10 @@ import Web3 from 'web3';
 import config from '@config/config';
 import logger from '@core/utils/logger';
 import { TransactionModel } from '@components/transaction/transaction.model';
+import { checkAddressType } from '@components/account_overview/account_overview.service';
+import item from '../core/contracts/itemContractV1.json';
 
+const { abi } = item;
 class TransactionService {
   web3: Web3;
 
@@ -10,6 +13,26 @@ class TransactionService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getStatusName(value) {
+    const RFIDStatuses = {
+      Pending: 0,
+      Available: 1,
+      Unavailable: 2,
+      Deleted: 3,
+    };
+    // Iterate through the keys of RFIDStatuses
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key in RFIDStatuses) {
+      // If the value is equal to the value of the key, return the key
+      if (RFIDStatuses[key] === value) {
+        return key;
+      }
+    }
+    // If the value is not found, return null
+    return null;
   }
 
   async detectAndSaveTransactions(latestBlockNumber?: number) {
@@ -33,11 +56,34 @@ class TransactionService {
           if (!transaction) {
             logger.info('No transactions receipt found');
           }
-
           const { baseFeePerGas } = latestBlock;
           const priorityFeePerGas =
             Number(tx.maxPriorityFeePerGas) || Number(tx.gasPrice) - Number(baseFeePerGas);
-
+          // check if the transaction is a contract creation
+          // to check whether the contract address is null or not. Contract address is null if the item is updated/deleted
+          let receiverAddress: string = tx.to || 'null';
+          if (transaction.contractAddress !== undefined) {
+            receiverAddress = transaction.contractAddress;
+          }
+          // to check whether the address is contract or not
+          const type = await checkAddressType(receiverAddress);
+          logger.info('Type:', type);
+          let note: string = 'null';
+          let onComplete: string = 'null';
+          if (type === 'contract') {
+            const contract = new this.web3.eth.Contract(abi, receiverAddress);
+            const data = await contract.methods.rfidStatus().call();
+            const stringData = this.getStatusName(Number(data));
+            note = stringData;
+            const log = (await contract.methods.getLogs().call()) || [];
+            const logData: string = log[log.length - 1][0] || 'null';
+            onComplete = 'Created';
+            if (logData.includes('updated')) {
+              onComplete = 'Updated';
+            } else if (logData.includes('deleted')) {
+              onComplete = 'Deleted';
+            }
+          }
           const transactionData = {
             hash: tx.hash,
             block: Number(latestBlock.number),
@@ -75,10 +121,9 @@ class TransactionService {
                   )
                 )
               : 0,
+            note,
+            onComplete,
           };
-
-          console.log(transaction.status, tx.input);
-          logger.info(`Transactions saved: ${tx.hash}`);
           return TransactionModel.create(transactionData);
         }
       });

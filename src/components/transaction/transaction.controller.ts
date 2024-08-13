@@ -1,5 +1,10 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
+import logger from '@core/utils/logger';
+import {
+  checkAddressType,
+  retrieveTransactionLists,
+} from '../account_overview/account_overview.service';
 import {
   read,
   readByHashId,
@@ -27,8 +32,26 @@ const retrieveTransactionsByHashId = async (req: Request, res: Response) => {
       // If the transaction is not found, return a 404 status code
       return res.status(404).json({ message: 'Transaction not found' });
     }
+    // to check whether the contract address is null or not. Contract address is null if the item is updated/deleted
+    if (transaction.contractAddress !== 'null') {
+      transaction.receiverAddress = transaction.contractAddress;
+    }
+    // to check whether the address is contract or not
+    const type = await checkAddressType(transaction.receiverAddress);
+    let seq = 0;
+    if (type === 'contract') {
+      const transactionList = await retrieveTransactionLists(transaction.receiverAddress)
+      const reverseList = transactionList.reverse();
+      for (let i = 0; i < reverseList.length; i += 1) {
+        if (transactionList[i].hash === transaction.hash) {
+          seq = i;
+        }
+      }
+    }
     // If the transaction is found, return it with a 200 status code
-    res.status(200).json({ message: 'Transaction retrieved successfully', output: transaction });
+    res
+      .status(200)
+      .json({ message: 'Transaction retrieved successfully', output: transaction, type, seq });
   } catch (error) {
     // If an error occurs during retrieval, return a 500 status code with the error message
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
