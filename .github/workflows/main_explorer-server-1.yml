@@ -40,6 +40,8 @@ jobs:
     environment:
       name: production # Use lowercase here
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download dist artifact from build job
@@ -51,12 +53,19 @@ jobs:
         run: |
           unzip release.zip -d ./deployment/
           ls -l ./deployment/
+          
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1685DC4F543D4CDB8589FCAFE63E9E28 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_21D8356B1813483AB29F934F95396A35 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D6D5CC5848684800B468B7D57794E80C }} 
 
+          
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'IntanExplorer'
+          app-name: 'explorer-server-1'
           slot-name: 'production' # Use lowercase here
           package: ./deployment/ # Deploy the folder where we unzipped the content
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DA4C36A4C9A24A45B69EC510300651B1 }}

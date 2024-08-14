@@ -6,6 +6,7 @@ const connect = async () => {
   try {
     const connectionString = `${config.mongoUrl}/${config.mongoDbName}`;
     await mongoose.connect(connectionString);
+    mongoose.set('debug', true);
     logger.info('Connected to MongoDB!');
     logger.info(`MongoDB URL: ${connectionString}`);
   } catch (err) {

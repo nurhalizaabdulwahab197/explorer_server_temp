@@ -19,5 +19,7 @@ export interface ITransaction {
   maxFeePerGas: number;
   maxPriorityFeePerGas: number;
   baseFeePerGas: number;
+  note?: string;
+  onComplete?: string;
   // ... any other properties you want to include
 }

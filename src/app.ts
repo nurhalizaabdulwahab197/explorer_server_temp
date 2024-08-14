@@ -34,4 +34,5 @@ app.use(http404);
 
 app.use(errorHandling);
 
+// eslint-disable-next-line prettier/prettier
 export default app;

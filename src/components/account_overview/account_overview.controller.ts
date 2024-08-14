@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { retrieveTransactionLists, retrieveBalanceETH } from './account_overview.service';
+import {
+  retrieveTransactionLists,
+  retrieveBalanceETH,
+  checkAddressType,
+} from './account_overview.service';
 
 const getAccountOverview = async (req: Request, res: Response) => {
   try {
@@ -10,12 +14,15 @@ const getAccountOverview = async (req: Request, res: Response) => {
         .status(httpStatus.BAD_REQUEST)
         .json({ success: false, error: 'Missing address parameter' });
     } else {
+      const addressType = await checkAddressType(add);
       // Call the service function to retrieve the transaction list
       const transactionList = await retrieveTransactionLists(add);
       const balance = await retrieveBalanceETH(add);
 
       // Send the transaction list as a response
-      res.status(httpStatus.OK).json({ success: true, data: transactionList, balance });
+      res
+        .status(httpStatus.OK)
+        .json({ success: true, data: transactionList, balance, addressType });
     }
   } catch (error) {
     // Handle errors
