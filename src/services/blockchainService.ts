@@ -16,9 +16,12 @@ class BlockchainService {
 
   pollingInterval: number;
 
+  isSyncing: boolean;
+
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
-    this.pollingInterval = 10000;
+    this.pollingInterval = 30000;
+    this.isSyncing = false;
   }
 
   startPolling() {
@@ -129,11 +132,13 @@ class BlockchainService {
 
   async syncBlock(blockNumber: number, latestBlockNumber: number) {
     if (blockNumber > latestBlockNumber) {
+      this.isSyncing = false;
       logger.info(`Synced up to block number: ${latestBlockNumber}`);
       return;
     }
 
     try {
+      this.isSyncing = true;
       const blockData = await this.web3.eth.getBlock(blockNumber);
 
       const blockMiner = await new Promise<string>((resolve) => {
@@ -203,6 +208,10 @@ class BlockchainService {
 
   async syncBlocks() {
     try {
+      if (this.isSyncing) {
+        logger.info('Already syncing blocks');
+        return;
+      }
       const lastSyncedBlockNumber = await getLastSyncedBlock();
       const latestBlockNumber = await this.web3.eth.getBlockNumber();
       logger.info(`Syncing blocks from ${lastSyncedBlockNumber + 1} to ${latestBlockNumber}`);
