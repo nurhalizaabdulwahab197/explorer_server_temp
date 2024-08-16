@@ -36,11 +36,8 @@ class TransactionService {
   }
 
   async detectAndSaveTransactions(latestBlockNumber?: number) {
-  async detectAndSaveTransactions(latestBlockNumber?: number) {
     try {
       // Fetch latest block
-      // eslint-disable-next-line no-param-reassign
-      if (!latestBlockNumber) latestBlockNumber = Number(await this.web3.eth.getBlockNumber());
       // eslint-disable-next-line no-param-reassign
       if (!latestBlockNumber) latestBlockNumber = Number(await this.web3.eth.getBlockNumber());
       const latestBlock = await this.web3.eth.getBlock(latestBlockNumber, true);
