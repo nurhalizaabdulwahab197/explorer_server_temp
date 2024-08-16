@@ -10,6 +10,7 @@ import {
 } from '@components/block/block.service';
 import { IBlock } from '@components/block/block.interface';
 import transactionService from './transactionService';
+import transactionService from './transactionService';
 
 class BlockchainService {
   web3: Web3;
@@ -20,6 +21,7 @@ class BlockchainService {
 
   constructor() {
     this.web3 = new Web3(new Web3.providers.HttpProvider(config.privateNetwork));
+    this.pollingInterval = 10000;
     this.pollingInterval = 30000;
     this.isSyncing = false;
   }
@@ -107,6 +109,7 @@ class BlockchainService {
           const gas = Number(tx.gas);
 
           if (Number.isNaN(gasPrice) || Number.isNaN(gas)) {
+          if (Number.isNaN(gasPrice) || Number.isNaN(gas)) {
             console.error(`Invalid gasPrice or gas for hash ${txHash}`);
             return 0;
           }
@@ -163,6 +166,9 @@ class BlockchainService {
         return '0x29e7152d0456258fa4babb7a3f37b8a0347684eb'; // Return default value in case of error
       });
 
+      const transactionNumber = Number(
+        await this.web3.eth.getBlockTransactionCount(blockData.number)
+      );
       const transactionNumber = Number(
         await this.web3.eth.getBlockTransactionCount(blockData.number)
       );
