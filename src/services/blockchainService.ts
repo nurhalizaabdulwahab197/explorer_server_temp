@@ -218,6 +218,8 @@ class BlockchainService {
       await this.syncBlock(lastSyncedBlockNumber + 1, Number(latestBlockNumber));
     } catch (error) {
       logger.error('Error initiating block sync:', error);
+    } finally {
+      this.isSyncing = false;
     }
   }
 }
