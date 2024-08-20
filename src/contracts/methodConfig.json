@@ -1,0 +1,14 @@
+{
+  "RFID": {
+    "methods": {
+      "getStatus": "rfidStatus",
+      "getHistory": "getLogs"
+    }
+  },
+  "CERTIFICATE": {
+    "methods": {
+      "getStatus": "getStatus",
+      "getHistory": "getModifications"
+    }
+  }
+}

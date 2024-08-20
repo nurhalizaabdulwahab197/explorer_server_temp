@@ -27,7 +27,8 @@
       "@core/*": ["core/*"],
       "@components/*": ["components/*"],
       "@services/*": ["services/*"],
-      "@config/*": ["config/*"]
+      "@config/*": ["config/*"],
+      "@contracts/*": ["contracts/*"],
     },
     "plugins": [{ "transform": "ts-optchain/transform" }]
   },
