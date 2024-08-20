@@ -73,16 +73,21 @@ class TransactionService {
           if (type === 'contract') {
             const contract = new this.web3.eth.Contract(abi, receiverAddress);
             const data = await contract.methods.rfidStatus().call();
-            const stringData = this.getStatusName(Number(data));
-            note = stringData;
-            const log = (await contract.methods.getLogs().call()) || [];
-            const logData: string = log[log.length - 1][0] || 'null';
-            onComplete = 'Created';
-            if (logData.includes('updated')) {
-              onComplete = 'Updated';
-            } else if (logData.includes('deleted')) {
-              onComplete = 'Deleted';
-            }
+            if (data == null) {
+              note = 'This is a contract';
+              onComplete = 'Successful';
+            } else {
+              const stringData = this.getStatusName(Number(data));
+              note = stringData;
+              const log = (await contract.methods.getLogs().call()) || [];
+              const logData: string = log[log.length - 1][0] || 'null';
+              onComplete = 'Created';
+              if (logData.includes('updated')) {
+                onComplete = 'Updated';
+              } else if (logData.includes('deleted')) {
+                onComplete = 'Deleted';
+              }
+             }
           }
           const transactionData = {
             hash: tx.hash,
@@ -135,4 +140,4 @@ class TransactionService {
   }
 }
 
-export default new TransactionService();
+export default new TransactionService()
