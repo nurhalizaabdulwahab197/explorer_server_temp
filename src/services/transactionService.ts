@@ -103,8 +103,10 @@ class TransactionService {
             const contractType = await this.checkContractType(receiverAddress);
             const interactor = new ContractInteractor(abiStorage, methodConfig);
             const contractProxy = new ContractProxy(interactor, contractType, receiverAddress);
-            note = await contractProxy.getHistory();
-            onComplete = await contractProxy.getStatus();
+            if (contractType !== 'Unknown') {
+              note = await contractProxy.getHistory();
+              onComplete = await contractProxy.getStatus();
+            }
             if (note.length <= 0) note = 'No history found for this contract address';
 
             if (contractType === 'RFID') {
@@ -125,6 +127,9 @@ class TransactionService {
                 note[note.length - 1].modifiedBy
               }`;
               note = stringData;
+            } else {
+              note = 'No history found for this contract address';
+              onComplete = 'Unknown';
             }
           }
           const transactionData = {
