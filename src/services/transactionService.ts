@@ -89,7 +89,7 @@ class TransactionService {
           const { baseFeePerGas } = latestBlock;
           const priorityFeePerGas =
             Number(tx.maxPriorityFeePerGas) || Number(tx.gasPrice) - Number(baseFeePerGas);
-          // check if the transaction is a contract creation
+          // check if the transaction is a contract creation Error checking contract type
           // to check whether the contract address is null or not. Contract address is null if the item is updated/deleted
           let receiverAddress: string = tx.to || 'null';
           if (transaction.contractAddress !== undefined) {
@@ -97,20 +97,30 @@ class TransactionService {
           }
           // to check whether the address is contract or not
           const type = await checkAddressType(receiverAddress);
-          let note: any;
+          let note: any = []; // Initialize as an empty array
           let onComplete: any;
+
           if (type === 'contract') {
             const contractType = await this.checkContractType(receiverAddress);
             const interactor = new ContractInteractor(abiStorage, methodConfig);
             const contractProxy = new ContractProxy(interactor, contractType, receiverAddress);
+
             if (contractType !== 'Unknown') {
               note = await contractProxy.getHistory();
               onComplete = await contractProxy.getStatus();
+            } else {
+              note = []; // Assign an empty array
+              onComplete = 'Unknown';
             }
-            if (note.length <= 0) note = 'No history found for this contract address';
+
+            // Ensure note is an array before accessing length
+            if (!Array.isArray(note) || note.length <= 0) {
+              note = [{ description: 'No history found for this contract address' }];
+            }
 
             if (contractType === 'RFID') {
-              const latestDescription = note[note.length - 1].description;
+              const latestNote = note[note.length - 1];
+              const latestDescription = latestNote.description;
 
               // Extract the numeric status code from the description
               const statusCodeMatch = latestDescription.match(/RFID status changed to (\d+)/);
@@ -123,15 +133,15 @@ class TransactionService {
               }
               onComplete = this.getStatusName(Number(onComplete));
             } else if (contractType === 'CERTIFICATE') {
-              const stringData = `${note[note.length - 1].action} by ${
-                note[note.length - 1].modifiedBy
-              }`;
+              const latestNote = note[note.length - 1];
+              const stringData = `${latestNote.action} by ${latestNote.modifiedBy}`;
               note = stringData;
             } else {
               note = 'No history found for this contract address';
               onComplete = 'Unknown';
             }
           }
+
           const transactionData = {
             hash: tx.hash,
             block: Number(latestBlock.number),
@@ -185,10 +195,14 @@ class TransactionService {
   async checkContractType(contractAddress: string): Promise<string> {
     try {
       const contract = new this.web3.eth.Contract(commonABI, contractAddress);
-      return (await contract.methods.CONTRACT_TYPE().call()) || 'Unknown';
+      if (contract.methods.CONTRACT_TYPE) {
+        return (await contract.methods.CONTRACT_TYPE().call()) || 'Unknown';
+      }
+      logger.info('CONTRACT_TYPE function not found in contract:', contractAddress);
+      return 'Unknown';
     } catch (error) {
-      logger.error('Error checking contract type:', error);
-      return 'Unknown'; // Always return 'Unknown' on error
+      logger.info('Error checking contract type (expected for some contracts):', error.message);
+      return 'Unknown'; // Return 'Unknown' when CONTRACT_TYPE is not available
     }
   }
 }
