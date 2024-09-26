@@ -1,9 +1,9 @@
-name: Build and deploy Node.js app to Azure Web App - IntanExplorer
+name: Build and deploy Node.js app to Azure Web App - ExplorerServer
 
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -14,22 +14,20 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '20.x'
           cache: 'npm'
 
       - name: npm install and build
         run: |
           npm install
           npm run build
-
       - name: Zip the application for deployment
         run: |
           zip -r release.zip dist package.json package-lock.json
-
       - name: Upload dist artifact for deployment job
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: release.zip
@@ -38,14 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: production # Use lowercase here
+      name: 'production' # Use lowercase here
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download dist artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: node-app
 
@@ -55,17 +53,16 @@ jobs:
           ls -l ./deployment/
           
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1685DC4F543D4CDB8589FCAFE63E9E28 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_21D8356B1813483AB29F934F95396A35 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D6D5CC5848684800B468B7D57794E80C }} 
-
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A6356504B79B4026A4CF07827DA2F29D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0E19BB2877804926AE5F1CB9EDFD782A }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CEDEFCF2F6C9444480E2153AEB6B42C7 }}
           
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'explorer-server-1'
-          slot-name: 'production' # Use lowercase here
+          app-name: 'ExplorerServer'
+          slot-name: 'production'
           package: ./deployment/ # Deploy the folder where we unzipped the content
