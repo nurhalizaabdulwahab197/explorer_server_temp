@@ -202,24 +202,26 @@ class BlockchainService {
       await this.syncBlock(blockNumber + 1, latestBlockNumber);
     } catch (error) {
       logger.error(`Error syncing block number ${blockNumber}:`, error);
-      // Handle error, maybe retry current block or stop syncing
+      this.isSyncing = false; // Reset the flag on error
+      // Optionally, you can decide whether to retry or handle the error differently
     }
   }
 
   async syncBlocks() {
+    if (this.isSyncing) {
+      logger.info('Already syncing blocks');
+      return;
+    }
+
     try {
-      if (this.isSyncing) {
-        logger.info('Already syncing blocks');
-        return;
-      }
+      this.isSyncing = true; // Set syncing flag to true
       const lastSyncedBlockNumber = await getLastSyncedBlock();
       const latestBlockNumber = await this.web3.eth.getBlockNumber();
       logger.info(`Syncing blocks from ${lastSyncedBlockNumber + 1} to ${latestBlockNumber}`);
       await this.syncBlock(lastSyncedBlockNumber + 1, Number(latestBlockNumber));
     } catch (error) {
       logger.error('Error initiating block sync:', error);
-    } finally {
-      this.isSyncing = false;
+      this.isSyncing = false; // Reset the flag on error
     }
   }
 }
