@@ -97,7 +97,7 @@ class TransactionService {
           }
           // to check whether the address is contract or not
           const type = await checkAddressType(receiverAddress);
-          let note: any = []; // Initialize as an empty array
+          let note: any;
           let onComplete: any;
 
           if (type === 'contract') {
@@ -134,12 +134,15 @@ class TransactionService {
               onComplete = this.getStatusName(Number(onComplete));
             } else if (contractType === 'CERTIFICATE') {
               const latestNote = note[note.length - 1];
-              const stringData = `${latestNote.action} by ${latestNote.modifiedBy}`;
+              const stringData = ${latestNote.action} by ${latestNote.modifiedBy};
               note = stringData;
             } else {
               note = 'No history found for this contract address';
               onComplete = 'Unknown';
             }
+          } else {
+            note = 'This is a normal transaction';
+            onComplete = 'Success';
           }
 
           const transactionData = {
