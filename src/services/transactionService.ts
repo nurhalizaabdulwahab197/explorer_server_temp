@@ -134,7 +134,7 @@ class TransactionService {
               onComplete = this.getStatusName(Number(onComplete));
             } else if (contractType === 'CERTIFICATE') {
               const latestNote = note[note.length - 1];
-              const stringData = ${latestNote.action} by ${latestNote.modifiedBy};
+              const stringData = `${latestNote.action} by ${latestNote.modifiedBy}`;
               note = stringData;
             } else {
               note = 'No history found for this contract address';
