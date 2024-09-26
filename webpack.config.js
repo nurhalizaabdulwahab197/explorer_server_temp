@@ -1,8 +1,8 @@
 const path = require('path');
-// eslint-disable-next-line import/no-extraneous-dependencies, node/no-unpublished-require
+// eslint-disable-next-line node/no-unpublished-require
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 // eslint-disable-next-line import/no-extraneous-dependencies, node/no-unpublished-require
-const CopyWebpackPlugin = require('copy-webpack-plugin'); // Ensure this is installed
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/server.ts',
@@ -25,15 +25,17 @@ module.exports = {
     ],
   },
   output: {
-    filename: 'server.js', // Output file
-    path: path.resolve(__dirname, 'dist'), // Output directory
+    filename: 'server.js',
+    path: path.resolve(__dirname, 'dist'),
   },
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, 'src', '**', '*.json'),
-          to: path.resolve(__dirname, 'dist', '[name][ext]'),
+          from: 'contracts/**/*.json',
+          to: '[path][name][ext]',
+          context: 'src',
+          noErrorOnMissing: true,
         },
       ],
     }),

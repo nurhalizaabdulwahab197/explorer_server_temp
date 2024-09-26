@@ -7,7 +7,7 @@
     "node": ">=8.10.0"
   },
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --config webpack.config.js",
     "server:prod": "node dist/server.js",
     "start": "node dist/server.js",
     "server:dev": "ts-node-dev --inspect=0.0.0.0:9229 --exit-child --respawn -r tsconfig-paths/register src/server.ts",
