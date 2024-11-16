@@ -1,10 +1,12 @@
+// webpack.config.js
+
 const path = require('path');
-// eslint-disable-next-line import/no-extraneous-dependencies, node/no-unpublished-require
+// eslint-disable-next-line node/no-unpublished-require
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
-  entry: './src/server.ts', // Your entry point
-  target: 'node', // Ensures Node.js compatibility
+  entry: './src/server.ts',
+  target: 'node',
   module: {
     rules: [
       {
@@ -15,16 +17,15 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
-    // Setup the plugin that reads paths from tsconfig
+    extensions: ['.tsx', '.ts', '.js', '.json'],
     plugins: [
       new TsconfigPathsPlugin({
-        configFile: './tsconfig.json', // or the path to your tsconfig file
+        configFile: './tsconfig.json',
       }),
     ],
   },
   output: {
-    filename: 'server.js', // Output file
-    path: path.resolve(__dirname, 'dist'), // Output directory
+    filename: 'server.js',
+    path: path.resolve(__dirname, 'dist'),
   },
 };
